@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ASSSDBenchmark
+  XmlFormatVersion="1">
+  <Information>
+    <Name>LITEON CA3-8D512</Name>
+    <Firmware>C496409</Firmware>
+    <Controller>stornvme</Controller>
+    <Size>476.94 GB</Size>
+    <DateTime>2019/2/20 22:41:11</DateTime>
+    <BenchmarkVersion>1.6.4237.30508</BenchmarkVersion>
+    <Mode>MB/s</Mode>
+    <Note />
+    <Signature />
+  </Information>
+  <SeqTest>
+    <Read>2104.64 MB/s</Read>
+    <Write>1751.94 MB/s</Write>
+  </SeqTest>
+  <Random4K1TTest>
+    <Read>24.58 MB/s</Read>
+    <Write>44.33 MB/s</Write>
+  </Random4K1TTest>
+  <Random4K64TTest>
+    <Read>642.46 MB/s</Read>
+    <Write>512.92 MB/s</Write>
+  </Random4K64TTest>
+  <AccTimeTest>
+    <Read>-.--- ms</Read>
+    <Write>0.091 ms</Write>
+  </AccTimeTest>
+  <Score>
+    <Read>878</Read>
+    <Write>732</Write>
+    <Total>2043</Total>
+  </Score>
+</ASSSDBenchmark>

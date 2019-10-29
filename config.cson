@@ -1,0 +1,7 @@
+"php-cs-fixer":
+  allowRisky: false # whether to run risky rules, false by default 
+  executablePath: "D:/phpStudy/PHPTutorial/php/php-cs-fixer" # the path to the `php-cs-fixer` executable 
+  executeOnSave: false # execute PHP CS fixer on save 
+  phpExecutablePath: "D:/phpStudy/PHPTutorial/php/php-7.2.1-nts/php.exe" # the path to the `php` executable 
+  rules: "-psr0,@PSR2,binary_operator_spaces,blank_line_before_return,..." # or null 
+  showInfoNotifications: true #show some status informations from the last "fix" 
