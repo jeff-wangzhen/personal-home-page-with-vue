@@ -9,12 +9,16 @@
 </template>
 
 <script>
-    // @ is an alias to /src
+// @ is an alias to /src
 
-    export default {
-        name: "NotFound",
-        components: {}
-    };
+export default {
+    name: "NotFound",
+    metaInfo: {
+        title: "页面不存在",
+        meta: []
+    },
+    components: {}
+};
 </script>
 <style lang="scss" scoped>
 div {
@@ -26,5 +30,3 @@ p {
     text-align: center;
 }
 </style>
-
-

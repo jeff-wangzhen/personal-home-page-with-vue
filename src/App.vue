@@ -3,15 +3,15 @@
         <nav>
             <b-nav tabs justified>
                 <b-nav-item
-                        @click="goIntroduction()"
-                        :class="{ actived: pathObj.activeArr[0] }"
+                    @click="goIntroduction()"
+                    :class="{ actived: pathObj.activeArr[0] }"
                 >
                     基本信息
                 </b-nav-item>
 
                 <b-nav-item
-                        @click="goMessages()"
-                        :class="{ actived: pathObj.activeArr[1] }"
+                    @click="goMessages()"
+                    :class="{ actived: pathObj.activeArr[1] }"
                 >
                     留言板
                 </b-nav-item>
@@ -31,185 +31,187 @@
 </template>
 
 <script>
-    import store from "./store";
+import store from "./store";
 
-    export default {
-        data() {
-            return {
-                footer: `联系我： <a href="mailto:kill370354@qq.com">kill370354@qq.com</a>`,
-                // classObject: { "active-class": (console.log(this), "d") }
-            };
-        },
-        created() {
-            document.title = this.pathObj.titleArr[0];
-            // console.log(this.$route, this.$router);
-            if (this.$route.name === "root") {
-                this.pathObj.activeArr[0] = true;
-                return;
+export default {
+    metaInfo: {
+        title: "44",
+        meta: []
+    },
+    data() {
+        return {
+            footer: `加油进步的程序员`
+            // classObject: { "active-class": (console.log(this), "d") }
+        };
+    },
+    created() {
+        // console.log(this.$route, this.$router);
+        if (this.$route.name === "root") {
+            this.pathObj.activeArr[0] = true;
+            return;
+        }
+        for (let i = this.pathObj.arr.length - 2; i > -1; i--) {
+            if (this.$route.name === this.pathObj.arr[i]) {
+                this.pathObj.activeArr[i] = true;
+
+                break;
             }
-            for (let i = this.pathObj.arr.length - 2; i > -1; i--) {
-                if (this.$route.name === this.pathObj.arr[i]) {
-                    this.pathObj.activeArr[i] = true;
-
-                    break;
-                }
-            }
-            // console.log(this.pathObj.activeArr);
-            //this.pathObj.flag = this.pathObj.arr.indexOf(this.$route.path) === "-1" ? false : true;
+        }
+        // console.log(this.pathObj.activeArr);
+        //this.pathObj.flag = this.pathObj.arr.indexOf(this.$route.path) === "-1" ? false : true;
+    },
+    mounted() {},
+    methods: {
+        // addActive() {},
+        goBack() {
+            // 点击后退
+            this.$router.go(-1);
         },
-        mounted() {
+        goIntroduction() {
+            this.pathObj.activeArr = [false, false, false, false];
+            this.pathObj.activeArr[0] = true;
+            this.$router.push({ path: "/introduction" });
         },
-        methods: {
-            // addActive() {},
-            goBack() {
-                // 点击后退
-                this.$router.go(-1);
-            },
-            goIntroduction() {
-                this.pathObj.activeArr = [false, false, false, false];
-                this.pathObj.activeArr[0] = true;
-                this.$router.push({ path: "/introduction" });
-            },
-            goMessages() {
-                this.pathObj.activeArr = [false, false, false, false];
-                this.pathObj.activeArr[1] = true;
-                this.$router.push({ path: "/messages" });
-            },
-            goLogin() {
-                this.pathObj.activeArr = [false, false, false, false];
-                this.pathObj.activeArr[2] = true;
-                this.$router.push({ path: "/home/first" });
-            },
+        goMessages() {
+            this.pathObj.activeArr = [false, false, false, false];
+            this.pathObj.activeArr[1] = true;
+            this.$router.push({ path: "/messages" });
         },
-        computed: {
-            transitionName() {
-                return store.getters.transitionName.transitionName;
-            },
-            pathObj() {
-                return store.getters.pathObj;
-            },
+        goLogin() {
+            this.pathObj.activeArr = [false, false, false, false];
+            this.pathObj.activeArr[2] = true;
+            this.$router.push({ path: "/home/first" });
+        }
+    },
+    computed: {
+        transitionName() {
+            return store.getters.transitionName.transitionName;
         },
-        watch: {
-
-            "$route.path": function(newVal) {
-                this.pathObj.flag = this.pathObj.pathArr.indexOf(newVal) >= 5;
-            },
-        },
-    };
+        pathObj() {
+            return store.getters.pathObj;
+        }
+    },
+    watch: {
+        "$route.path": function(newVal) {
+            this.pathObj.flag = this.pathObj.pathArr.indexOf(newVal) >= 5;
+        }
+    }
+};
 </script>
 
 <style lang="scss">
-    @media only screen and (min-width: 280px) {
-        html {
-            font-size: 125% !important;
-        }
+@media only screen and (min-width: 280px) {
+    html {
+        font-size: 125% !important;
+    }
+}
+
+@media only screen and (min-width: 750px) {
+    html {
+        font-size: 150% !important;
+    }
+}
+
+@media only screen and (min-width: 1242px) {
+    html {
+        font-size: 187.5% !important;
+    }
+}
+
+.nav-item {
+    transition: all 0.5s ease;
+    background-color: floralwhite;
+}
+
+.nav-tabs .nav-link {
+    display: block;
+    padding-left: 0;
+    padding-right: 0;
+    text-align: center; // height: 100%;
+    a {
+        text-decoration: none;
     }
 
-    @media only screen and (min-width: 750px) {
-        html {
-            font-size: 150% !important;
-        }
+    .active:hover {
+        color: #fff;
     }
+}
 
-    @media only screen and (min-width: 1242px) {
-        html {
-            font-size: 187.5% !important;
-        }
-    }
+.nav-item.actived {
+    color: #ffffff;
+    background-color: rgb(204, 232, 207);
 
-    .nav-item {
-        transition: all 0.5s ease;
-        background-color: floralwhite;
-    }
+    border-radius: 5px;
 
-    .nav-tabs .nav-link {
-        display: block;
-        padding-left: 0;
-        padding-right: 0;
-        text-align: center; // height: 100%;
-        a {
-            text-decoration: none;
-        }
+    display: block;
+}
 
-        .active:hover {
-            color: #fff;
-        }
-    }
+nav {
+    top: 0;
+    position: sticky;
+    background-color: #fff;
+    z-index: 1;
+}
 
-    .nav-item.actived {
-        color: #ffffff;
-        background-color: rgb(204, 232, 207);
+footer#mainApp {
+    font-size: 0.8rem;
+    text-align: center;
+    border-top: 10px groove skyblue;
+    // flex:none;
+}
 
-        border-radius: 5px;
+html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow-x: hidden;
+}
 
-        display: block;
-    }
+#app {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    touch-action: auto;
+}
 
-    nav {
-        top: 0;
-        position: sticky;
-        background-color: #fff;
-        z-index: 1;
-    }
+.transitionRight-enter {
+    opacity: 0;
+    top: 2.5rem;
+    transform: translateX(100%);
+    position: absolute;
+}
 
-    footer#mainApp {
-        font-size: 0.8rem;
-        text-align: center;
-        border-top: 10px groove skyblue;
-        // flex:none;
-    }
+.transitionRight-leave-to {
+    opacity: 0;
+    top: 2.5rem;
+    transform: translateX(-100%);
+    position: absolute;
+}
 
-    html,
-    body {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        width: 100%;
-    }
+.transitionRight-enter-active,
+.transitionRight-leave-active,
+.transitionLeft-enter-active,
+.transitionLeft-leave-active {
+    top: 2.5rem;
+    transition: all 0.5s ease;
+    width: 100%;
+    position: absolute;
+}
 
-    #app {
-        min-height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        touch-action: auto;
-    }
+.transitionLeft-enter {
+    opacity: 0;
+    top: 2.5rem;
+    position: absolute;
+    transform: translateX(-100%);
+}
 
-    .transitionRight-enter {
-        opacity: 0;
-        top: 2.5rem;
-        transform: translateX(100%);
-        position: absolute;
-    }
-
-    .transitionRight-leave-to {
-        opacity: 0;
-        top: 2.5rem;
-        transform: translateX(-100%);
-        position: absolute;
-    }
-
-    .transitionRight-enter-active,
-    .transitionRight-leave-active,
-    .transitionLeft-enter-active,
-    .transitionLeft-leave-active {
-        top: 2.5rem;
-        transition: all 0.5s ease;
-        width: 100%;
-        position: absolute;
-    }
-
-    .transitionLeft-enter {
-        opacity: 0;
-        top: 2.5rem;
-        position: absolute;
-        transform: translateX(-100%);
-    }
-
-    .transitionLeft-leave-to {
-        top: 2.5rem;
-        opacity: 0;
-        transform: translateX(100%);
-        position: absolute;
-    }
+.transitionLeft-leave-to {
+    top: 2.5rem;
+    opacity: 0;
+    transform: translateX(100%);
+    position: absolute;
+}
 </style>

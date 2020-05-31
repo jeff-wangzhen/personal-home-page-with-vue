@@ -12,7 +12,7 @@ import {
     BTable,
     CardPlugin,
     LayoutPlugin,
-    NavPlugin,
+    NavPlugin
 } from "bootstrap-vue";
 // import { Loading } from "element-ui";
 // import { Message } from "element-ui";
@@ -22,6 +22,9 @@ import {
 // Vue.use(ElementUI);
 // import Mint from "mint-ui";
 // Vue.use(Mint);
+import Meta from "vue-meta";
+
+Vue.use(Meta);
 import { Indicator, InfiniteScroll, Loadmore, Toast } from "mint-ui";
 // Vue.component(TabContainer.name, TabContainer);
 // Vue.component(TabContainerItem.name, TabContainerItem);
@@ -63,9 +66,10 @@ Vue.prototype.$Toast = Toast;
 Vue.prototype.$axios = axios; //全局注册，使用方法为:this.$axios
 Vue.prototype.qs = qs;
 axios.defaults.baseURL = "/grwz-vue/";
+console.log(5465465464);
 Vue.config.productionTip = false;
 new Vue({
     router,
     // store,
-    render: (h) => h(App),
+    render: (h) => h(App)
 }).$mount("#app");

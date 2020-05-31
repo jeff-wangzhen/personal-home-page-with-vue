@@ -1,7 +1,7 @@
 import Vue from "vue";
 import Vuex from "vuex";
 
-Vue.use(Vuex);
+if (!window.Vuex) Vue.use(Vuex);
 export default new Vuex.Store({
     state: {
         transitionObj: { transitionName: "transitionLeft" },
@@ -9,12 +9,12 @@ export default new Vuex.Store({
             transitionName: "transitionLeft",
             arr: ["introduction", "messages", ""],
             pathArr: ["/", "/introduction", "/messages", ""],
-            titleArr: ["王振的个人主页", "王振的个人主页", "留言板"],
-            activeArr: [false, false, false, false],
-        },
-    }, getters: {
-        transitionName: state => state.transitionObj,
-        pathObj: state => state.pathObj,
+            activeArr: [false, false, false, false]
+        }
+    },
+    getters: {
+        transitionName: (state) => state.transitionObj,
+        pathObj: (state) => state.pathObj
     },
     mutations: {
         setTransitionObj(state, obj) {
@@ -22,7 +22,7 @@ export default new Vuex.Store({
         },
         setPathObj(state, obj) {
             state.pathObj = Object.assign({}, state.pathObj, obj);
-        },
+        }
     },
     actions: {
         setTransitionObj(context, obj) {
@@ -30,6 +30,6 @@ export default new Vuex.Store({
         },
         setPathObj(context, obj) {
             context.commit("setPathObj", obj);
-        },
-    },
+        }
+    }
 });

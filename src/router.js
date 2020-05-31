@@ -2,12 +2,11 @@ import Vue from "vue";
 import Router from "vue-router";
 import store from "./store";
 
-const introduction = () => import( "./views/introduction.vue");
-const messages = () => import( "./views/messages.vue");
+import introduction from "./views/introduction.vue";
+const messages = () => import("./views/messages.vue");
 const NotFound = () => import("./views/NotFound.vue");
 
-
-Vue.use(Router);
+if (!window.VueRouter) Vue.use(Router);
 Router.prototype.goBack = function() {
     this.isBack = true;
     window.history.go(-1);
@@ -20,30 +19,30 @@ var router = new Router({
             path: "/introduction",
             name: "introduction",
 
-            redirect: "/",
+            redirect: "/"
         },
 
         {
             path: "/",
             name: "root",
 
-            component: introduction,
+            component: introduction
         },
         {
             path: "/messages",
             name: "messages",
 
-            component: messages,
+            component: messages
         },
         {
             path: "*",
             name: "404",
 
-            component: NotFound,
-        },
+            component: NotFound
+        }
     ],
     linkActiveClass: "actived",
-    "eslint-disable": true,
+    "eslint-disable": true
 });
 router.beforeEach(function(to, from, next) {
     var pathObj = store.getters.pathObj;
@@ -55,17 +54,13 @@ router.beforeEach(function(to, from, next) {
     } else if (fromTndex === pathObj.pathArr.length - 1) {
         pathObj.pathArr.pop(fromTndex);
     } else {
-        document.title = pathObj.titleArr[toTndex];
+        // document.title = pathObj.titleArr[toTndex];
     }
     const compare = toTndex > fromTndex;
 
-
     store.dispatch("setTransitionObj", {
-        transitionName: compare
-            ? "transitionRight"
-            : "transitionLeft",
+        transitionName: compare ? "transitionRight" : "transitionLeft"
     });
-
 
     next();
 });

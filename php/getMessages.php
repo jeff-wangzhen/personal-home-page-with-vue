@@ -3,7 +3,7 @@ header('Content-Type:text/html; charset=utf-8');
 date_default_timezone_set("Asia/Shanghai");
 $arr = array("code" => 0);
 // var_dump($_GET) ;
-include "checkToken.php";
+// include "checkToken.php";
 
 function maskEmail(&$email)
 {
@@ -32,13 +32,13 @@ function maskEmail(&$email)
     }
 }
 function maskString(&$string)
-{
+{  
     // $regex = '/^(.*)@(.*)$/i';
     // $matches = array();
 
     if (empty($string)) {
-        return;
-    }
+        return; 
+    } 
     $temp = $string;
     if (mb_strlen($temp) > 2) {
         $string = mb_substr($temp, 0, 1);
@@ -67,13 +67,13 @@ if ($start + $length > 0 && $length > 0) {
 
     if ($lastest == "true") {
         $messagesql = "select id,province,city,messageContent,contactType,contactMethod,
-             microtime from  tb_messages ORDER BY  id DESC  limit 0,$length ";
+             microtime from  tb_vue_messages ORDER BY  id DESC  limit 0,$length ";
     }
     // $start_size = 10; //每页显示4条记录
     // var_dump($_GET);
     // $offset = ($start - 1) * $start_size; //计算下一页从第几条数据开始循环
     else {
-        $messagesql = "select * from  tb_messages WHERE id >=$start AND id<($start+$length)  ORDER BY   id DESC";
+        $messagesql = "select * from  tb_vue_messages WHERE id >=$start AND id<($start+$length)  ORDER BY   id DESC";
     }
     // echo "11111",$messagesql;
 
@@ -83,9 +83,11 @@ if ($start + $length > 0 && $length > 0) {
         // $messagescount->execute();
         // $message_count = $messagescount->fetch(PDO::FETCH_BOTH)[0]; //查询符合条件的记录总条数
         // $start_count = ceil($message_count / $start_size); //根据记录总数除以每页显示的记录数求出所分的页数
+        
         $result->execute();
         // while ($row = $result->fetch(PDO::FETCH_OBJ));
         $rows = $result->fetchAll(PDO::FETCH_ASSOC);
+        $pdo->commit();
         for ($i = (count($rows) - 1); $i > -1; $i--) {
             // if($rows[$i]["contactMethod"]=="undefined"){
 
@@ -108,7 +110,6 @@ if ($start + $length > 0 && $length > 0) {
         $arr["code"] = 1;
         $arr["messages"] = $rows;
      if(count($rows)<10)   $arr["allLoaded"] = true;
-        $pdo->commit();
     } catch (PDOException $e) {
         // echo "PDO事务处理失败，请告知kill370354@qq.com";
         $pdo->rollBack();

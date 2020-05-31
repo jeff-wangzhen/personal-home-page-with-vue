@@ -1,7 +1,7 @@
 .DS_Store
-node_modules
 /dist
-
+/php/tmp
+/php/connect.php
 # local env files
 .env.local
 .env.*.local
@@ -19,4 +19,5 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw?
-node_modules
+/node_modules
+/package-lock.json

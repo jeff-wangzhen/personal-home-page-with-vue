@@ -6,7 +6,6 @@ $arr = array("code" => 0);
 include "checkToken.php";
 
 if (trim($_POST['messageContent']) != "") {
-
     function get_user_device($ua)
     {
         if (stripos($ua, "HONOR") !== false || stripos($ua, "HUAWEI") !== false) {
@@ -319,67 +318,60 @@ if (trim($_POST['messageContent']) != "") {
     include "connect.php";
 
     try {
+        error_reporting(0);
+        //$user_name = $_GET["username"];
+        $dir = 'tmp/';
+        session_save_path($dir);
+        session_start();
+        if (trim($_POST["contactMethod"])=="") {
+            $_POST["contactType"]="undefinedContactMethod";
+        }
+        // switch ($_POST["selected"]) {
+        //     case "QQ":$QQ = $_POST["contactMethodString"];
+        //         break;
+        //     case "email":$email = $_POST["contactMethodString"];
+        //         break;
+        //     case "wechat":$wechat = $_POST["contactMethodString"];
+        //         break;
+        //     case "phone":$phone = $_POST["contactMethodString"];
+        //         break;
+        //     case "undefined":$undefinedContactMethod = $_POST["contactMethodString"];
+        //         break;
+        // }
+        $time = date("Y-m-d H:i:s");
+        $microtime = number_format(microtime(true), 3, '', '');
 
-//        //echo $_POST['messagetext'];
-        if (false) {
-            ?>
-            <script>alert("内容不能为空！");
-                history.go(-1);</script>
-            <?php
-} else {
-            error_reporting(0);
-            //$user_name = $_GET["username"];
-            $dir = 'tmp/';
-            session_save_path($dir);
-            session_start();
-            if(trim($_POST["contactMethod"])==""){
-                $_POST["contactType"]="undefinedContactMethod";
-            }
-            // switch ($_POST["selected"]) {
-            //     case "QQ":$QQ = $_POST["contactMethodString"];
-            //         break;
-            //     case "email":$email = $_POST["contactMethodString"];
-            //         break;
-            //     case "wechat":$wechat = $_POST["contactMethodString"];
-            //         break;
-            //     case "phone":$phone = $_POST["contactMethodString"];
-            //         break;
-            //     case "undefined":$undefinedContactMethod = $_POST["contactMethodString"];
-            //         break;
-            // }
-            $time = date("Y-m-d H:i:s");
-            $microtime = number_format(microtime(true), 3, '', '');
-
-            $agent = get_user_browser(); //判断浏览器
-            $query = "insert into tb_messages
+        $agent = get_user_browser(); //判断浏览器
+        $query = "insert into tb_vue_messages
              (messageContent,contactType,contactMethod,
-             userAgent,agentJudge,IP,country,province,city,time,microtime)
+             userAgent,agentJudge,IP,address,country,province,city,time,microtime)
               values
               (:messageContent,:contactType,:contactMethod,
-              :userAgent,:agentJudge,:IP,:country,:province,:city,:time,:microtime)";
+              :userAgent,:agentJudge,:IP,:address,:country,:province,:city,:time,:microtime)";
 
-            $result = $pdo->prepare($query);
-            $result->bindParam(":messageContent", $_POST["messageContent"]);
-            $result->bindParam(":contactType", $_POST["contactType"]);
-$result->bindParam(":contactMethod", $_POST["contactMethod"]);
+        $result = $pdo->prepare($query);
+        $result->bindParam(":messageContent", $_POST["messageContent"]);
+        $result->bindParam(":contactType", $_POST["contactType"]);
+        $result->bindParam(":contactMethod", $_POST["contactMethod"]);
 
-            $result->bindParam(":userAgent", $_SERVER['HTTP_USER_AGENT']);
-            $result->bindParam(":agentJudge", $agentJudge);
-            $result->bindParam(":IP", $IP);
+        $result->bindParam(":userAgent", $_SERVER['HTTP_USER_AGENT']);
+        $result->bindParam(":agentJudge", $agentJudge);
+        $result->bindParam(":IP", $IP);
+        $result->bindParam(":address", $addressString);
 
-            // $result->bindParam(":address", "7");//加上就错，真奇怪
-            $result->bindParam(":country", $address[0]);
+        // $result->bindParam(":address", "7");//加上就错，真奇怪
+        $result->bindParam(":country", $address[0]);
 
-            $result->bindParam(":province", $address[1]);
-            $result->bindParam(":city", $address[2]);
-            $result->bindParam(":time", $time);
-            $result->bindParam(":microtime", $microtime);
-            $pdo->beginTransaction();
+        $result->bindParam(":province", $address[1]);
+        $result->bindParam(":city", $address[2]);
+        $result->bindParam(":time", $time);
+        $result->bindParam(":microtime", $microtime);
+        $pdo->beginTransaction();
 
-            $result->execute();
-            // //echo 'SQL Query:' . $query;
+        $result->execute();
+        // //echo 'SQL Query:' . $query;
 
-            $code = $result->errorCode(); //$result是查询结果集
+        $code = $result->errorCode(); //$result是查询结果集
             if ($code == '00000') { //echo "ok";
                 // $message_count = $_GET["messagecount"] + 1;
                 // $page_size = $_GET["pagesize"];
@@ -391,32 +383,27 @@ $result->bindParam(":contactMethod", $_POST["contactMethod"]);
                 //
 
                 $arr["code"] = 1;
-
             } else {
 
 //echo '数据库错误：<br/>';
                 //echo 'SQL Query:' . $query;
                 //echo '<pre>';
                 $arr["code"] = 0;
-$arr["msg"]=$result->errorInfo();
+                $arr["msg"]=$result->errorInfo();
                 // var_dump($result->errorInfo());
                 //echo '</pre>';
             }
-        }
+        
         $pdo->commit();
     } catch (PDOException $e) {
         //echo $e->getMessage();
         //echo "<br/><br/>PDO事务处理失败，请告知kill370354@qq.com";
         $pdo->rollBack();
         $arr["code"] = 0;
-$arr["msg"] = $e->getMessage();
-
-
+        $arr["msg"] = $e->getMessage();
     }
 } else {
- $arr["msg"] = "传参有误";
-
-
+    $arr["msg"] = "传参有误";
 }
 ;
 echo json_encode($arr);

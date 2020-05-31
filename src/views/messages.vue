@@ -65,10 +65,10 @@
                         <address>
                             <span>{{ item.province }} {{ item.city }}</span
                             >&emsp;
-                            <span class="message-contactType"
-                                >{{ item.contactType }}
-                                {{ item.contactMethod }}</span
-                            >
+                            <span class="message-contactType">
+                                {{ item.contactType }}
+                                {{ item.contactMethod }}
+                            </span>
                         </address>
 
                         <time class="message-time">{{
@@ -96,482 +96,488 @@
 </template>
 
 <script>
-    import "quill/dist/quill.core.css";
-    import "quill/dist/quill.snow.css";
-    import "quill/dist/quill.bubble.css";
-    // import Quill from "quill";
-    // import { quillEditor } from "vue-quill-editor";
+import "quill/dist/quill.core.css";
+import "quill/dist/quill.snow.css";
+import "quill/dist/quill.bubble.css";
+// import Quill from "quill";
+// import { quillEditor } from "vue-quill-editor";
 
-    import { quillEditor, Quill } from "vue-quill-editor";
-    import { container, ImageExtend, QuillWatch } from "quill-image-extend-module";
-    // var Delta = Quill.import("delta");
-    Quill.register("modules/ImageExtend", ImageExtend);
-    //convert img links to actual images
-    import { ImageDrop } from "quill-image-drop-module";
+import { quillEditor, Quill } from "vue-quill-editor";
+import { container, ImageExtend, QuillWatch } from "quill-image-extend-module";
+// var Delta = Quill.import("delta");
+Quill.register("modules/ImageExtend", ImageExtend);
+//convert img links to actual images
+import { ImageDrop } from "quill-image-drop-module";
 
-    Quill.register("modules/imageDrop", ImageDrop);
-    import BackToTop from "../components/backToTop";
-    export default {
-        created() {
-            // Indicator.open({
-            //     text: "Loading...",
-            //     spinnerType: "fading-circle"
-            // });
-            this.$data.loading = true;
-            this.getMessages(0, 10, true).then(
+Quill.register("modules/imageDrop", ImageDrop);
+import BackToTop from "../components/backToTop";
+export default {
+    metaInfo: {
+        title: "留言板",
+        meta: []
+    },
+    data() {
+        return {
+            myBackToTopStyle: {
+                "right": "10px",
+                "bottom": "10px",
+                "width": "40px",
+                "height": "40px",
+                "border-radius": "20px",
+                "line-height": "40px",
+                "background-image":
+                    "url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADcAAAA3CAMAAACfBSJ0AAAAA3NCSVQICAjb4U/gAAAAS1BMVEX///+kpKSJiYmkpKSJiYmkpKSJiYmkpKSJiYmkpKSJiYmkpKSJiYmkpKSJiYmkpKSJiYmkpKSkpKSJiYmkpKSkpKSJiYmkpKSJiYmh9zwTAAAAGXRSTlMAEREiIjMzRERVVWZmd3eIiJmqqrvMzN3dvHZN/QAAAAlwSFlzAAALEgAACxIB0t1+/AAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNXG14zYAAAIlSURBVEiJjZbbloMgDEVrKbWUOlSEyv9/6RgCKiGo56GrCziGHW653RhJPdoZ5ayW3JBavfFzKW/6U5dyMyenu0subwcNGmwO7lTTJRKU1WLfqnOz4G0KP23qbmFwEmzIIfaN/EeTc6h7Yodr51xGdMPaxqOkdSNjHLiPfbhvF1NV0KKpLVBjHLZLjvBMtGcI4clE9FvmYIFGMuT+W3y/O2kFRrsP72hKpgCaSGvntpl2MEu6AJ+AoogSZooxdAMO9WIQMYMQmuySCIf6PcouAVDwp2fCTWETRTSJcKzD/YW9/uqAkPx9ZlGvUIogwqphgsqd8vgRH0GEPPbxt5zmFKhKRBEjLVH9ARyH6IHMETwKxyBaWAlyNCo4BhEO3Y2kpYZLiLsdrmvft2EL4XvkezdtIbzbvgYcRaS+ewuOIGZf3tVtuBIRdjYshj2HKxCjZYy79AyuQIwHQudL4vFM+lTjP7kr+nB/yuraf1a+8jpMkXw695d9Dk+CobfZiU+mFZD00j3xrXEcCXjsW++zeF3byz67XdiuPBOPiWp3+Pp5S6MsX5kjieJNiK/MYYGS1JUvV8e9f5zM9qpgePbNZ23lWqvTsiAXBqSGUUcVEc7JMrZk9LQ22KQ9a8tlluUrH4k1GltoCSwGbd2p0OUaGB2WaEudqrYRQuU6dminLVeSUIDapfy0a/nZAlhBxpnTiSvG1Jaa9LXNe+v6paD3abY9i/UPr3Np1ijS2w8AAAAASUVORK5CYII=')",
+                "background-size": "contain"
+            },
+            loading: false,
+            firstId: 0,
+            lastId: 0,
+            allLoaded: false,
+            messages: [],
+            submitButton: "提交",
+            disabled: false,
+            contactType: "undefinedContactMethod",
+            contactMethod: "",
+            content: "",
+            editorOption: {
+                debug: "false",
+
+                placeholder: "Compose an epic...",
+                readOnly: true,
+                theme: "snow",
+                modules: {
+                    imageDrop: true,
+                    ImageExtend: {
+                        loading: true,
+                        name: "myfile",
+                        size: 1,
+                        sizeError: () => {
+                            this.$Toast({
+                                message: `文件大小不能超过2M`,
+                                iconClass: "icon icon-error"
+                            });
+                        },
+                        action: "/grwz-vue/php/fileupload.php",
+                        response: (res) => {
+                            return res.path;
+                        },
+                        error: () => {
+                            this.$Toast({
+                                message: `上传失败，请稍后重试`,
+                                iconClass: "icon icon-error"
+                            });
+                        }
+                    },
+                    toolbar: {
+                        container: container,
+                        handlers: {
+                            "image": function() {
+                                QuillWatch.emit(this.quill.id);
+                            }
+                        }
+                    }
+                }
+            },
+            selected: "undefinedContactMethod",
+            options: [
+                {
+                    value: "undefinedContactMethod",
+                    text: "联系方式",
+                    reg: /.*/
+                },
+                {
+                    value: "email",
+                    text: "电子邮箱",
+                    reg:
+                        "^[A-Za-z0-9\\u4e00-\\u9fa5]+@[a-zA-Z0-9_-]+(.[a-zA-Z0-9_-]+)+$"
+                },
+                { value: "QQ", text: "QQ", reg: "^[1-9][0-9]{4,}$" },
+                {
+                    value: "wechat",
+                    text: "微信",
+                    reg: "^[a-zA-Z][a-zA-Z0-9_-]{5,19}$"
+                },
+                {
+                    value: "phone",
+                    text: "手机",
+                    reg: "^\\d{11}$"
+                }
+            ],
+            fullscreenLoading: false
+        };
+    },
+    created() {
+        // Indicator.open({
+        //     text: "Loading...",
+        //     spinnerType: "fading-circle"
+        // });
+        this.$data.loading = true;
+        this.getMessages(0, 10, true).then(
+            (res) => {
+                this.$data.messages = res;
+                this.$data.loading = false;
+                // 执行成功的回调函数
+            },
+            () => {
+                this.$Toast({
+                    message: "加载失败，请稍后重试",
+                    iconClass: "icon icon-error"
+                });
+                this.$data.loading = false;
+                // 执行失败的回调函数
+            }
+        );
+    },
+
+    // manually control the data synchronization
+    // 如果需要手动控制数据同步，父组件需要显式地处理changed事件
+    methods: {
+        // onEditorBlur(quill) {
+        //     //console.log("editor blur!", quill.getContents());
+        // },
+        // onEditorFocus(quill) {
+        //     //console.log("editor focus!", quill);
+        // },
+        // onEditorReady(quill) {
+        //     //console.log("editor ready!", quill);
+        // },
+        onEditorChange({ html }) {
+            //console.log("editor change!", quill, html, text);
+            this.content = html;
+        },
+        unique(array) {
+            // 对象去重方法
+            var allArr = []; //建立新的临时数组
+            for (var i = 0; i < array.length; i++) {
+                var flag = true;
+                for (var j = 0; j < allArr.length; j++) {
+                    if (array[i].id == allArr[j].id) {
+                        flag = false;
+                    }
+                }
+                if (flag) {
+                    allArr.push(array[i]);
+                }
+            }
+            // //console.log("all", allArr);
+            return allArr;
+        },
+        loadTop() {
+            this.getMessages(this.$data.lastId, 10).then(
                 (res) => {
-                    this.$data.messages = res;
-                    this.$data.loading = false;
+                    //console.log(this.$data.messages);
+                    let temp = this.$data.messages;
+                    temp = res.concat(temp);
+                    this.$data.messages = this.unique(temp);
+                    // this.$data.messages.splice(0, res.length);
+                    // for (let i = res.length - 1; i > -1; i--) {
+                    //     this.$data.messages.unshift(res[i]);
+                    // }
+                    //console.log(1, temp, res, this.$data.messages);
                     // 执行成功的回调函数
                 },
-                (error) => {
+                () => {
                     this.$Toast({
                         message: "加载失败，请稍后重试",
                         iconClass: "icon icon-error"
                     });
-                    this.$data.loading = false;
                     // 执行失败的回调函数
                 }
             );
+            // this.updateMessagesList();
+            this.$refs.loadmore.onTopLoaded();
         },
-        data() {
-            return {
-                myBackToTopStyle: {
-                    "right": "10px",
-                    "bottom": "10px",
-                    "width": "40px",
-                    "height": "40px",
-                    "border-radius": "20px",
-                    "line-height": "40px",
-                    "background-image":
-                        "url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADcAAAA3CAMAAACfBSJ0AAAAA3NCSVQICAjb4U/gAAAAS1BMVEX///+kpKSJiYmkpKSJiYmkpKSJiYmkpKSJiYmkpKSJiYmkpKSJiYmkpKSJiYmkpKSJiYmkpKSkpKSJiYmkpKSkpKSJiYmkpKSJiYmh9zwTAAAAGXRSTlMAEREiIjMzRERVVWZmd3eIiJmqqrvMzN3dvHZN/QAAAAlwSFlzAAALEgAACxIB0t1+/AAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNXG14zYAAAIlSURBVEiJjZbbloMgDEVrKbWUOlSEyv9/6RgCKiGo56GrCziGHW653RhJPdoZ5ayW3JBavfFzKW/6U5dyMyenu0subwcNGmwO7lTTJRKU1WLfqnOz4G0KP23qbmFwEmzIIfaN/EeTc6h7Yodr51xGdMPaxqOkdSNjHLiPfbhvF1NV0KKpLVBjHLZLjvBMtGcI4clE9FvmYIFGMuT+W3y/O2kFRrsP72hKpgCaSGvntpl2MEu6AJ+AoogSZooxdAMO9WIQMYMQmuySCIf6PcouAVDwp2fCTWETRTSJcKzD/YW9/uqAkPx9ZlGvUIogwqphgsqd8vgRH0GEPPbxt5zmFKhKRBEjLVH9ARyH6IHMETwKxyBaWAlyNCo4BhEO3Y2kpYZLiLsdrmvft2EL4XvkezdtIbzbvgYcRaS+ewuOIGZf3tVtuBIRdjYshj2HKxCjZYy79AyuQIwHQudL4vFM+lTjP7kr+nB/yuraf1a+8jpMkXw695d9Dk+CobfZiU+mFZD00j3xrXEcCXjsW++zeF3byz67XdiuPBOPiWp3+Pp5S6MsX5kjieJNiK/MYYGS1JUvV8e9f5zM9qpgePbNZ23lWqvTsiAXBqSGUUcVEc7JMrZk9LQ22KQ9a8tlluUrH4k1GltoCSwGbd2p0OUaGB2WaEudqrYRQuU6dminLVeSUIDapfy0a/nZAlhBxpnTiSvG1Jaa9LXNe+v6paD3abY9i/UPr3Np1ijS2w8AAAAASUVORK5CYII=')",
-                    "background-size": "contain"
+        loadBottom() {
+            //不知道怎么用，很容易导致无限刷新，放弃
+            this.loading = true;
+            this.allLoaded = true;
+            //console.log("dfdssdfxd", this.$data.firstId);
+            // //console.log("bottm");
+            // if (this.$data.firstId < 2) return false;
+            //console.log("bottm222222222");
+            // this.allLoaded = true;
+            this.getMessages(this.$data.firstId - 10, 10).then(
+                (res) => {
+                    // //console.log(this.$data.messages);
+                    let temp = this.$data.messages;
+                    temp = temp.concat(res);
+                    this.$data.messages = this.unique(temp);
+                    //console.log("dfdssdfxd", this.$data.messages);
+                    this.loading = false;
+                    this.allLoaded = false;
                 },
-                loading: false,
-                firstId: 0,
-                lastId: 0,
-                allLoaded: false,
-                messages: [],
-                submitButton: "提交",
-                disabled: false,
-                contactType: "undefinedContactMethod",
-                contactMethod: "",
-                content: "",
-                editorOption: {
-                    debug: "false",
-
-                    placeholder: "Compose an epic...",
-                    readOnly: true,
-                    theme: "snow",
-                    modules: {
-                        imageDrop: true,
-                        ImageExtend: {
-                            loading: true,
-                            name: "myfile",
-                            size: 1,
-                            sizeError: () => {
-                                this.$Toast({
-                                    message: `文件大小不能超过2M`,
-                                    iconClass: "icon icon-error"
-                                });
-                            },
-                            action:
-                                "https://a.yangy97.top/grwz-vue/php/fileupload.php",
-                            response: (res) => {
-                                return res.path;
-                            },
-                            error: (res) => {
-                                this.$Toast({
-                                    message: `上传失败，请稍后重试`,
-                                    iconClass: "icon icon-error"
-                                });
-                            }
-                        },
-                        toolbar: {
-                            container: container,
-                            handlers: {
-                                "image": function() {
-                                    QuillWatch.emit(this.quill.id);
-                                }
-                            }
-                        }
-                    }
-                },
-                selected: "undefinedContactMethod",
-                options: [
-                    {
-                        value: "undefinedContactMethod",
-                        text: "联系方式",
-                        reg: /.*/
-                    },
-                    {
-                        value: "email",
-                        text: "电子邮箱",
-                        reg:
-                            "^[A-Za-z0-9\\u4e00-\\u9fa5]+@[a-zA-Z0-9_-]+(.[a-zA-Z0-9_-]+)+$"
-                    },
-                    { value: "QQ", text: "QQ", reg: "^[1-9][0-9]{4,}$" },
-                    {
-                        value: "wechat",
-                        text: "微信",
-                        reg: "^[a-zA-Z][a-zA-Z0-9_-]{5,19}$"
-                    },
-                    {
-                        value: "phone",
-                        text: "手机",
-                        reg: "^\\d{11}$"
-                    }
-                ],
-                fullscreenLoading: false
-            };
+                () => {
+                    //console.log("dfdssdfxd", this.$data.messages);
+                    this.loading = false;
+                    this.allLoaded = false;
+                    //console.log(error);
+                }
+            );
+            this.loading = false;
+            this.$refs.loadmore.onBottomLoaded();
+            this.allLoaded = true; // 若数据已全部获取完毕
         },
-        // manually control the data synchronization
-        // 如果需要手动控制数据同步，父组件需要显式地处理changed事件
-        methods: {
-            onEditorBlur(quill) {
-                //console.log("editor blur!", quill.getContents());
-            },
-            onEditorFocus(quill) {
-                //console.log("editor focus!", quill);
-            },
-            onEditorReady(quill) {
-                //console.log("editor ready!", quill);
-            },
-            onEditorChange({ quill, html, text }) {
-                //console.log("editor change!", quill, html, text);
-                this.content = html;
-            },
-            unique(array) {
-                // 对象去重方法
-                var allArr = []; //建立新的临时数组
-                for (var i = 0; i < array.length; i++) {
-                    var flag = true;
-                    for (var j = 0; j < allArr.length; j++) {
-                        if (array[i].id == allArr[j].id) {
-                            flag = false;
-                        }
-                    }
-                    if (flag) {
-                        allArr.push(array[i]);
-                    }
-                }
-                // //console.log("all", allArr);
-                return allArr;
-            },
-            loadTop() {
-                this.getMessages(this.$data.lastId, 10).then(
-                    (res) => {
-                        //console.log(this.$data.messages);
-                        let temp = this.$data.messages;
-                        temp = res.concat(temp);
-                        this.$data.messages = this.unique(temp);
-                        // this.$data.messages.splice(0, res.length);
-                        // for (let i = res.length - 1; i > -1; i--) {
-                        //     this.$data.messages.unshift(res[i]);
-                        // }
-                        //console.log(1, temp, res, this.$data.messages);
-                        // 执行成功的回调函数
-                    },
-                    (error) => {
-                        this.$Toast({
-                            message: "加载失败，请稍后重试",
-                            iconClass: "icon icon-error"
-                        });
-                        // 执行失败的回调函数
-                    }
-                );
-                // this.updateMessagesList();
-                this.$refs.loadmore.onTopLoaded();
-            },
-            loadBottom() {
-                //不知道怎么用，很容易导致无限刷新，放弃
-                this.loading = true;
-                this.allLoaded = true;
-                //console.log("dfdssdfxd", this.$data.firstId);
-                // //console.log("bottm");
-                // if (this.$data.firstId < 2) return false;
-                //console.log("bottm222222222");
-                // this.allLoaded = true;
-                this.getMessages(this.$data.firstId - 10, 10).then(
-                    (res) => {
-                        // //console.log(this.$data.messages);
-                        let temp = this.$data.messages;
-                        temp = temp.concat(res);
-                        this.$data.messages = this.unique(temp);
-                        //console.log("dfdssdfxd", this.$data.messages);
-                        this.loading = false;
-                        this.allLoaded = false;
-                    },
-                    (error) => {
-                        //console.log("dfdssdfxd", this.$data.messages);
-                        this.loading = false;
-                        this.allLoaded = false;
-                        //console.log(error);
-                    }
-                );
-                this.loading = false;
-                this.$refs.loadmore.onBottomLoaded();
-                this.allLoaded = true; // 若数据已全部获取完毕
-            },
-            loadMore() {
-                // return false;
-                if (this.$data.allLoaded || this.$data.firstId === 0) {
-                    return false;
-                }
-                //console.log(9);
-                this.$data.loading = true;
-                this.getMessages(this.$data.firstId - 10, 10).then(
-                    (res) => {
-                        // //console.log(this.$data.messages);
-                        let temp = this.$data.messages;
-                        temp = temp.concat(res);
-                        this.$data.messages = this.unique(temp);
-                        //console.log("dfdssdfxd", this.$data.messages);
-                        this.loading = false;
-                    },
-                    (error) => {
-                        this.$Toast({
-                            message: "加载失败，请稍后重试",
-                            iconClass: "icon icon-error"
-                        });
-                        this.loading = false;
-                    }
-                );
-            },
-            maskMessages(messages) {
-                var that = this;
-                var options = that.$data.options;
-                for (var i = messages.length - 1; i > -1; i--) {
-                    // messages.contactMethod=messages[messages.]
-                    for (var j = options.length - 1; j > 0; j--) {
-                        if (messages[i].contactType === options[j].value) {
-                            messages[i].contactType = options[j].text;
-                        }
-                    }
-                    if (messages[i].contactType === options[0].value) {
-                        if (
-                            messages[i].contactMethod &&
-                            messages[i].contactMethod !== ""
-                        ) {
-                            messages[i].contactType = "未指定";
-                        } else messages[i].contactType = "";
-                    }
-                }
-                // //console.log(9);
-
-                return messages;
-            },
-
-            getMessages(start, length, lastest = false) {
-                var that = this;
-                return new Promise((resolve, reject) => {
-                    this.$axios
-                        .get("/php/getMessages.php", {
-                            params: {
-                                start,
-                                length,
-                                lastest
-                            }
-                        })
-                        .then(function(response) {
-                            //console.log(
-                            //     start,
-                            //     length,
-                            //     lastest,
-                            //     response,
-                            //     that.$data
-                            // );
-                            if (!response.data.messages) return;
-                            let length = response.data.messages.length;
-                            if (length > 0) {
-                                if (lastest)
-                                    that.$data.lastId =
-                                        response.data.messages[0].id;
-                                that.$data.firstId = parseInt(
-                                    response.data.messages[length - 1].id
-                                );
-                                if (response.data.allLoaded === true)
-                                    that.$data.allLoaded = true;
-                                // else that.$data.allLoaded = false;
-                                // //console.log(
-                                //     that.$data.allLoaded,
-                                //     "leng   ",
-                                //     length,
-                                //     that.$data.firstId,
-                                //     "firstid   ",
-                                //     response.data
-                                // );
-
-                                resolve(that.maskMessages(response.data.messages));
-                            }
-
-                            //console.log("resolving");
-                        })
-                        .catch(function(error) {
-                            reject(error);
-                        });
-                });
-            },
-            checkContactMethod() {
-                var options = this.$data.options;
-                var that = this;
-                this.$data.contactMethod = this.$data.contactMethod.trim();
-                for (var j = options.length - 1; j > -1; j--) {
-                    if (this.$data.contactType === options[j].value) {
-                        if (
-                            !new RegExp(options[j].reg).test(
-                                this.$data.contactMethod
-                            )
-                        ) {
-                            this.$Toast({
-                                message: `联系方式格式不正确`,
-                                iconClass: "icon icon-error"
-                            });
-                            return false;
-                        }
-                    }
-                }
-                return true;
-            },
-            maskContackMethod(string) {
-                //console.log("qaz   ", string.length);
-                if (string.length < 3) return "**";
-                if (string.length > 5) return "*****";
-                return (
-                    string.substr(0, 1) +
-                    "*".repeat(string.length - 2) +
-                    string.substr(string.length - 1, 1)
-                );
-            },
-            submit() {
-                //console.log("222222222", this.$data.content);
-                var that = this;
-                // Loading.service({ fullscreen: true });
-                if (this.$data.content.replace(/<(?!img).*?>/g, "").trim() === "") {
-                    // this.$message({
-                    //     showClose: true,
-                    //     message: "内容不能为空！",
-                    //     type: "error"
-                    // });
+        loadMore() {
+            // return false;
+            if (this.$data.allLoaded || this.$data.firstId === 0) {
+                return false;
+            }
+            //console.log(9);
+            this.$data.loading = true;
+            this.getMessages(this.$data.firstId - 10, 10).then(
+                (res) => {
+                    // //console.log(this.$data.messages);
+                    let temp = this.$data.messages;
+                    temp = temp.concat(res);
+                    this.$data.messages = this.unique(temp);
+                    //console.log("dfdssdfxd", this.$data.messages);
+                    this.loading = false;
+                },
+                () => {
                     this.$Toast({
-                        message: "内容不能为空！",
+                        message: "加载失败，请稍后重试",
+                        iconClass: "icon icon-error"
+                    });
+                    this.loading = false;
+                }
+            );
+        },
+        maskMessages(messages) {
+            var that = this;
+            var options = that.$data.options;
+            for (var i = messages.length - 1; i > -1; i--) {
+                // messages.contactMethod=messages[messages.]
+                for (var j = options.length - 1; j > 0; j--) {
+                    if (messages[i].contactType === options[j].value) {
+                        messages[i].contactType = options[j].text;
+                    }
+                }
+                if (messages[i].contactType === options[0].value) {
+                    if (
+                        messages[i].contactMethod &&
+                        messages[i].contactMethod !== ""
+                    ) {
+                        messages[i].contactType = "未指定";
+                    } else messages[i].contactType = "";
+                }
+            }
+            // //console.log(9);
+
+            return messages;
+        },
+
+        getMessages(start, length, lastest = false) {
+            var that = this;
+            return new Promise((resolve, reject) => {
+                this.$axios
+                    .get("/php/getMessages.php", {
+                        params: {
+                            start,
+                            length,
+                            lastest
+                        }
+                    })
+                    .then(function(response) {
+                        //console.log(
+                        //     start,
+                        //     length,
+                        //     lastest,
+                        //     response,
+                        //     that.$data
+                        // );
+                        if (!response.data.messages) return;
+                        let length = response.data.messages.length;
+                        if (length > 0) {
+                            if (lastest)
+                                that.$data.lastId =
+                                    response.data.messages[0].id;
+                            that.$data.firstId = parseInt(
+                                response.data.messages[length - 1].id
+                            );
+                            if (response.data.allLoaded === true)
+                                that.$data.allLoaded = true;
+                            // else that.$data.allLoaded = false;
+                            // //console.log(
+                            //     that.$data.allLoaded,
+                            //     "leng   ",
+                            //     length,
+                            //     that.$data.firstId,
+                            //     "firstid   ",
+                            //     response.data
+                            // );
+
+                            resolve(that.maskMessages(response.data.messages));
+                        }
+
+                        //console.log("resolving");
+                    })
+                    .catch(function(error) {
+                        reject(error);
+                        // eslint-disable-next-line vue/script-indent
+                    });
+            });
+        },
+        checkContactMethod() {
+            var options = this.$data.options;
+            // var that = this;
+            this.$data.contactMethod = this.$data.contactMethod.trim();
+            for (var j = options.length - 1; j > -1; j--) {
+                if (this.$data.contactType === options[j].value) {
+                    if (
+                        !new RegExp(options[j].reg).test(
+                            this.$data.contactMethod
+                        )
+                    ) {
+                        this.$Toast({
+                            message: `联系方式格式不正确`,
+                            iconClass: "icon icon-error"
+                        });
+                        return false;
+                    }
+                }
+            }
+            return true;
+        },
+        maskContackMethod(string) {
+            //console.log("qaz   ", string.length);
+            if (string.length < 3) return "**";
+            if (string.length > 5) return "*****";
+            return (
+                string.substr(0, 1) +
+                "*".repeat(string.length - 2) +
+                string.substr(string.length - 1, 1)
+            );
+        },
+        submit() {
+            //console.log("222222222", this.$data.content);
+            // var that = this;
+            // Loading.service({ fullscreen: true });
+            if (this.$data.content.replace(/<(?!img).*?>/g, "").trim() === "") {
+                // this.$message({
+                //     showClose: true,
+                //     message: "内容不能为空！",
+                //     type: "error"
+                // });
+                this.$Toast({
+                    message: "内容不能为空！",
+                    iconClass: "icon icon-error"
+                });
+
+                return;
+            }
+            if (!this.checkContactMethod()) {
+                return;
+            }
+            // let loadingInstance = this.$loading({
+            //     lock: true,
+            //     text: "提交中",
+            //     spinner: "el-icon-loading",
+            //     background: "rgba(0, 0, 0, 0.7)"
+            //     // fullscreenLoading: false
+            // });
+            this.$Indicator.open({
+                text: "提交中...",
+                spinnerType: "fading-circle"
+            });
+            var tempMessage = {
+                //这里是发送给后台的数据
+                "messageContent": this.$data.content,
+                "contactType": this.$data.contactType,
+                "contactMethod": this.$data.contactMethod,
+                "microtime": Date.now()
+            };
+            this.$axios({
+                method: "post",
+                url: "/php/submitMessages.php",
+                data: this.qs.stringify(tempMessage)
+            })
+                .then((response) => {
+                    this.$Indicator.close();
+                    //这里使用了ES6的语法
+                    if (response.data.code === 1) {
+                        this.$Toast({
+                            message: "提交成功！",
+                            iconClass: "icon icon-success"
+                        });
+                    }
+
+                    //console.log(response.data); //请求成功返回的数据
+                    // loadingInstance.close();
+                    this.$data.content = "";
+                    tempMessage["contactMethod"] = this.maskContackMethod(
+                        tempMessage["contactMethod"]
+                    );
+                    this.$data.messages.unshift(
+                        this.maskMessages([tempMessage])[0]
+                    );
+                    //console.log(this.$data.messages);
+                })
+                .catch((error) => {
+                    this.$Indicator.close();
+                    this.$Toast({
+                        message: `提交失败  ${error}`,
                         iconClass: "icon icon-error"
                     });
 
-                    return;
-                }
-                if (!this.checkContactMethod()) {
-                    return;
-                }
-                // let loadingInstance = this.$loading({
-                //     lock: true,
-                //     text: "提交中",
-                //     spinner: "el-icon-loading",
-                //     background: "rgba(0, 0, 0, 0.7)"
-                //     // fullscreenLoading: false
-                // });
-                this.$Indicator.open({
-                    text: "提交中...",
-                    spinnerType: "fading-circle"
+                    // loadingInstance.close();
+                    // this.disabled = false;
+                    // this.submitButton = "提交";
+                    //console.log(error); //请求失败返回的数据
+                    // eslint-disable-next-line vue/script-indent
                 });
-                var tempMessage = {
-                    //这里是发送给后台的数据
-                    "messageContent": this.$data.content,
-                    "contactType": this.$data.contactType,
-                    "contactMethod": this.$data.contactMethod,
-                    "microtime": Date.now()
-                };
-                this.$axios({
-                    method: "post",
-                    url: "/php/submitMessages.php",
-                    data: this.qs.stringify(tempMessage)
-                })
-                    .then((response) => {
-                        this.$Indicator.close();
-                        //这里使用了ES6的语法
-                        if (response.data.code === 1) {
-                            this.$Toast({
-                                message: "提交成功！",
-                                iconClass: "icon icon-success"
-                            });
-                        }
-
-                        //console.log(response.data); //请求成功返回的数据
-                        // loadingInstance.close();
-                        this.$data.content = "";
-                        tempMessage["contactMethod"] = this.maskContackMethod(
-                            tempMessage["contactMethod"]
-                        );
-                        this.$data.messages.unshift(
-                            this.maskMessages([tempMessage])[0]
-                        );
-                        //console.log(this.$data.messages);
-                    })
-                    .catch((error) => {
-                        this.$Indicator.close();
-                        this.$Toast({
-                            message: `提交失败  ${error}`,
-                            iconClass: "icon icon-error"
-                        });
-
-                        // loadingInstance.close();
-                        // this.disabled = false;
-                        // this.submitButton = "提交";
-                        //console.log(error); //请求失败返回的数据
-                    });
-                //console.log(
-                //     "提交",
-                //     this.$data.content,
-                //     this.$data.selected,
-                //     this.$data.contactMethod
-                // );
-            }
-        },
-        computed: {
-            editor() {
-                return this.$refs.myQuillEditor.quill;
-            }
-        },
-        mounted() {
-            //console.log("this is current quill instance object", this.editor);
-        },
-        components: { BackToTop, quillEditor },
-        filters: {
-            formatTime: function(value) {
-                function addZero(val) {
-                    if (val < 10) {
-                        return "0" + val;
-                    } else {
-                        return val;
-                    }
-                }
-                var dataTime = "";
-                var data = new Date();
-                data.setTime(value);
-                var year = data.getFullYear();
-                var month = addZero(data.getMonth() + 1);
-                var day = addZero(data.getDate());
-                var hour = addZero(data.getHours());
-                var minute = addZero(data.getMinutes());
-                var second = addZero(data.getSeconds());
-
-                dataTime =
-                    year +
-                    "-" +
-                    month +
-                    "-" +
-                    day +
-                    " " +
-                    hour +
-                    ":" +
-                    minute +
-                    ":" +
-                    second;
-
-                return dataTime; //将格式化后的字符串输出到前端显示
-            }
+            //console.log(
+            //     "提交",
+            //     this.$data.content,
+            //     this.$data.selected,
+            //     this.$data.contactMethod
+            // );
         }
-    };
+    },
+    computed: {
+        editor() {
+            return this.$refs.myQuillEditor.quill;
+        }
+    },
+    mounted() {
+        //console.log("this is current quill instance object", this.editor);
+    },
+    components: { BackToTop, quillEditor },
+    filters: {
+        formatTime: function(value) {
+            function addZero(val) {
+                if (val < 10) {
+                    return "0" + val;
+                } else {
+                    return val;
+                }
+            }
+            var dataTime = "";
+            var data = new Date();
+            data.setTime(value);
+            var year = data.getFullYear();
+            var month = addZero(data.getMonth() + 1);
+            var day = addZero(data.getDate());
+            var hour = addZero(data.getHours());
+            var minute = addZero(data.getMinutes());
+            var second = addZero(data.getSeconds());
+
+            dataTime =
+                year +
+                "-" +
+                month +
+                "-" +
+                day +
+                " " +
+                hour +
+                ":" +
+                minute +
+                ":" +
+                second;
+
+            return dataTime; //将格式化后的字符串输出到前端显示
+        }
+    }
+};
 </script>
 
 <style>
@@ -662,7 +668,7 @@
 }
 </style>
 
-<style lang="scss"  >
+<style lang="scss">
 #pullDown,
 #pullUp {
     background: #fff;
@@ -757,4 +763,3 @@
     content: "\2714";
 }
 </style>
-
