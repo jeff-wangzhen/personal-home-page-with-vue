@@ -7,59 +7,78 @@ const messages = () => import("./views/messages.vue");
 const NotFound = () => import("./views/NotFound.vue");
 
 if (!window.VueRouter) Vue.use(Router);
-Router.prototype.goBack = function() {
-    this.isBack = true;
-    window.history.go(-1);
-};
+let routes = [
+    {
+        path: "/",
+        name: "root",
+        redirect: "/introduction",
+        meta: { keepAlive: true }
+    },
+    {
+        path: "/introduction",
+        name: "introduction",
+        component: introduction,
+        meta: { keepAlive: true }
+    },
+
+    {
+        path: "/messages",
+        name: "messages",
+        component: messages,
+        meta: { keepAlive: true }
+    },
+    {
+        path: "*",
+        name: "404",
+        component: NotFound,
+        meta: { keepAlive: true }
+    }
+];
+function scrollBehavior(to, from, savedPosition) {
+    console.log(923423423, savedPosition);
+    if (savedPosition) {
+        return savedPosition;
+    } else {
+        if (from.meta.keepAlive) {
+            from.meta.savedPosition = Math.floor(
+                document.body.scrollTop ||
+                    document.documentElement.scrollTop ||
+                    window.pageXOffset
+            );
+        }
+        console.log(333, from.meta, to.meta);
+        return { x: 0, y: to.meta.savedPosition || 0 };
+    }
+}
+console.log(scrollBehavior);
 var router = new Router({
     mode: "history",
     base: process.env.BASE_URL,
-    routes: [
-        {
-            path: "/introduction",
-            name: "introduction",
-
-            redirect: "/"
-        },
-
-        {
-            path: "/",
-            name: "root",
-
-            component: introduction
-        },
-        {
-            path: "/messages",
-            name: "messages",
-
-            component: messages
-        },
-        {
-            path: "*",
-            name: "404",
-
-            component: NotFound
-        }
-    ],
+    routes,
     linkActiveClass: "actived",
-    "eslint-disable": true
+    scrollBehavior
 });
 router.beforeEach(function(to, from, next) {
-    var pathObj = store.getters.pathObj;
-    let toTndex = pathObj.pathArr.indexOf(to.path);
-    let fromTndex = pathObj.pathArr.indexOf(from.path);
-    if (toTndex === -1) {
-        pathObj.pathArr.push(to.path);
-        toTndex = pathObj.pathArr.length - 1;
-    } else if (fromTndex === pathObj.pathArr.length - 1) {
-        pathObj.pathArr.pop(fromTndex);
-    } else {
-        // document.title = pathObj.titleArr[toTndex];
-    }
+    // document.getElementsByTagName("body")[0].style.overflowX = "hidden";
+    // console.log(
+    //     4444444444,
+    //     to,
+    //     document.getElementsByTagName("body")[0].style.overflowX
+    // );
+    var top = Math.floor(
+        document.body.scrollTop ||
+            document.documentElement.scrollTop ||
+            window.pageXOffset
+    );
+    console.log(top, store);
+    let routesPath = routes.map((item) => item.path);
+    let toTndex = routesPath.indexOf(to.path);
+    let fromTndex = routesPath.indexOf(from.path);
+
     const compare = toTndex > fromTndex;
 
-    store.dispatch("setTransitionObj", {
-        transitionName: compare ? "transitionRight" : "transitionLeft"
+    store.dispatch("setTransitionName", {
+        transitionName: compare ? "slide-left" : "slide-right"
     });
 
     next();

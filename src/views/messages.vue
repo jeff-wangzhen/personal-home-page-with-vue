@@ -99,22 +99,55 @@
 import "quill/dist/quill.core.css";
 import "quill/dist/quill.snow.css";
 import "quill/dist/quill.bubble.css";
-// import Quill from "quill";
-// import { quillEditor } from "vue-quill-editor";
-
+import BackToTop from "../components/backToTop";
+import { ImageDrop } from "quill-image-drop-module";
 import { quillEditor, Quill } from "vue-quill-editor";
 import { container, ImageExtend, QuillWatch } from "quill-image-extend-module";
 // var Delta = Quill.import("delta");
 Quill.register("modules/ImageExtend", ImageExtend);
 //convert img links to actual images
-import { ImageDrop } from "quill-image-drop-module";
 
 Quill.register("modules/imageDrop", ImageDrop);
-import BackToTop from "../components/backToTop";
 export default {
     metaInfo: {
-        title: "留言板",
+        title: "留言板112321323123",
         meta: []
+    },
+    components: { BackToTop, quillEditor },
+    filters: {
+        formatTime: function(value) {
+            function addZero(val) {
+                if (val < 10) {
+                    return "0" + val;
+                } else {
+                    return val;
+                }
+            }
+            var dataTime = "";
+            var data = new Date();
+            data.setTime(value);
+            var year = data.getFullYear();
+            var month = addZero(data.getMonth() + 1);
+            var day = addZero(data.getDate());
+            var hour = addZero(data.getHours());
+            var minute = addZero(data.getMinutes());
+            var second = addZero(data.getSeconds());
+
+            dataTime =
+                year +
+                "-" +
+                month +
+                "-" +
+                day +
+                " " +
+                hour +
+                ":" +
+                minute +
+                ":" +
+                second;
+
+            return dataTime; //将格式化后的字符串输出到前端显示
+        }
     },
     data() {
         return {
@@ -206,6 +239,11 @@ export default {
             fullscreenLoading: false
         };
     },
+    computed: {
+        editor() {
+            return this.$refs.myQuillEditor.quill;
+        }
+    },
     created() {
         // Indicator.open({
         //     text: "Loading...",
@@ -228,9 +266,15 @@ export default {
             }
         );
     },
+    mounted() {
+        window.addEventListener("pageshow", function() {
+            console.log("pageshow");
+        });
+        window.addEventListener("pagehide", function() {
+            console.log("pagehide");
+        });
+    },
 
-    // manually control the data synchronization
-    // 如果需要手动控制数据同步，父组件需要显式地处理changed事件
     methods: {
         // onEditorBlur(quill) {
         //     //console.log("editor blur!", quill.getContents());
@@ -531,50 +575,6 @@ export default {
             //     this.$data.selected,
             //     this.$data.contactMethod
             // );
-        }
-    },
-    computed: {
-        editor() {
-            return this.$refs.myQuillEditor.quill;
-        }
-    },
-    mounted() {
-        //console.log("this is current quill instance object", this.editor);
-    },
-    components: { BackToTop, quillEditor },
-    filters: {
-        formatTime: function(value) {
-            function addZero(val) {
-                if (val < 10) {
-                    return "0" + val;
-                } else {
-                    return val;
-                }
-            }
-            var dataTime = "";
-            var data = new Date();
-            data.setTime(value);
-            var year = data.getFullYear();
-            var month = addZero(data.getMonth() + 1);
-            var day = addZero(data.getDate());
-            var hour = addZero(data.getHours());
-            var minute = addZero(data.getMinutes());
-            var second = addZero(data.getSeconds());
-
-            dataTime =
-                year +
-                "-" +
-                month +
-                "-" +
-                day +
-                " " +
-                hour +
-                ":" +
-                minute +
-                ":" +
-                second;
-
-            return dataTime; //将格式化后的字符串输出到前端显示
         }
     }
 };

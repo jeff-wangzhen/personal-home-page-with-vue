@@ -2,6 +2,7 @@
 // gzip压缩
 const CompressionWebpackPlugin = require("compression-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
+const HardSourceWebpackPlugin = require("hard-source-webpack-plugin");
 // 是否为生产环境
 const isProduction = process.env.NODE_ENV !== "development";
 
@@ -64,9 +65,8 @@ module.exports = {
             .set("components", resolve("src/components"));
     },
     configureWebpack: (config) => {
-        // 用cdn方式引入，则构建时要忽略相关资源
         if (isProduction || devNeedCdn) config.externals = cdn.externals;
-        // 生产环境相关配置
+        config.plugins = config.plugins.concat([new HardSourceWebpackPlugin()]);
         if (isProduction) {
             const productionGzipExtensions = ["html", "js", "css"];
             config.plugins = config.plugins.concat([
@@ -144,15 +144,14 @@ module.exports = {
         port: "37354",
         https: false,
         hot: true,
-        hotOnly: false,
         //下面的proxy地址就是php文件的地址
         proxy: {
             "/grwz-vue": {
-                target: "https://wz.loveli.top/",
+                target: "http://127.7.7.7",
                 changeOrigin: true,
                 ws: true,
                 pathRewrite: {
-                    // "^/api": ""
+                    // "^/grwz-vue": ""
                 }
             }
         }

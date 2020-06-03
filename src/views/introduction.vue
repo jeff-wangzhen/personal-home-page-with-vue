@@ -82,6 +82,7 @@ export default {
 .img-circle {
     display: block;
     width: 200px;
+    height: 280px;
     border-radius: 30px;
     margin: 1rem auto;
 }

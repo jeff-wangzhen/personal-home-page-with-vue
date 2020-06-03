@@ -1,5 +1,6 @@
 import Vue from "vue";
 import router from "./router";
+import store from "./store";
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-vue/dist/bootstrap-vue.css";
 import {
@@ -11,8 +12,7 @@ import {
     BSpinner,
     BTable,
     CardPlugin,
-    LayoutPlugin,
-    NavPlugin
+    LayoutPlugin
 } from "bootstrap-vue";
 // import { Loading } from "element-ui";
 // import { Message } from "element-ui";
@@ -34,8 +34,6 @@ import "mint-ui/lib/style.css";
 import axios from "axios";
 import qs from "qs";
 import App from "./App.vue";
-// import store from "./store";
-Vue.use(NavPlugin);
 Vue.component("b-table", BTable);
 Vue.component("b-card", BCard);
 Vue.use(LayoutPlugin);
@@ -66,10 +64,10 @@ Vue.prototype.$Toast = Toast;
 Vue.prototype.$axios = axios; //全局注册，使用方法为:this.$axios
 Vue.prototype.qs = qs;
 axios.defaults.baseURL = "/grwz-vue/";
-console.log(5465465464);
+
 Vue.config.productionTip = false;
 new Vue({
     router,
-    // store,
+    store,
     render: (h) => h(App)
 }).$mount("#app");
