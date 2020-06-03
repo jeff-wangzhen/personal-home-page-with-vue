@@ -144,16 +144,18 @@ module.exports = {
         port: "37354",
         https: false,
         hot: true,
-        //下面的proxy地址就是php文件的地址
-        proxy: {
-            "/grwz-vue": {
-                target: "http://127.7.7.7",
-                changeOrigin: true,
-                ws: true,
-                pathRewrite: {
-                    // "^/grwz-vue": ""
-                }
-            }
+        historyApiFallback: {
+            index: "/grwz-vue/index.html"
         }
+        // proxy: {
+        //     "/grwz-vue": {
+        //         target: "http://127.7.7.7",
+        //         changeOrigin: true,
+        //         ws: true,
+        //         pathRewrite: {
+        //             // "^/grwz-vue": ""
+        //         }
+        //     }
+        // }
     }
 };

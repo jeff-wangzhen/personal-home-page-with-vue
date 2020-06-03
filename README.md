@@ -2,7 +2,7 @@
 
 ## 缘起
 
-最近投了几份简历，似乎很多公司对实习生的要求都很高，生怕自己要失业，连实习都找不到，于是最近一周多忙赶 vue 的程序，希望能够以此证明自己学过 vue，了解 vue，当然目前还没到熟练掌握的程度。
+2019 年六七月，投了几份简历，似乎很多公司对实习生的要求都很高，生怕自己要失业，连实习都找不到，于是最近一周多忙赶 vue 的程序，希望能够以此证明自己学过 vue，了解 vue，当然目前还没到熟练掌握的程度。
 里面的内容我之前用普通网页做过，[点击这里](http://wz.yangy97.top/grwzphp)访问，或者[点击这里](http://wz.yangy97.top/grwz-vue)访问本项目。
 
 ## BUG
@@ -21,30 +21,8 @@
 
 ## 使用须知
 
--   最重要的是修改后台接口，在 vue.config.js 里
+-   最重要的是修改后台接口，在 /vue.config.js 里
 -   修改 php 文件连接配置
 -   打包完成后输出在 /dist/grwz-vue/ 下面，请把该目录移动到服务器根目录下，最后直接访问 http://localhost/grwz-vue 。
--   数据库只有一张 tb_vue_messages 表，文件在 data/中
+-   数据库只有一张 tb_vue_messages 表，文件在 /data/ 中
 -   使用了 history 模式，这个需要服务器支持
-
-## 一切配置好后
-
-```
-npm install
-```
-
-### Compiles and hot-reloads for development
-
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-
-```
-npm run build
-```
-
-### Customize configuration
-
-See [Configuration Reference](https://cli.vuejs.org/config/).
