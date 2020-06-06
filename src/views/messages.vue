@@ -1,101 +1,70 @@
 <template>
-    <div>
-        <mt-loadmore
-            :top-method="loadTop"
-            :bottom-all-loaded="allLoaded"
-            ref="loadmore"
-        >
-            <div id="leavemessage">
-                既已到此，何不留言
-            </div>
-            <!-- bidirectional data binding（双向数据绑定） -->
-            <!-- <quill-editor
-                v-model="content"
-                ref="myQuillEditor"
-                :options="editorOption"
-                @blur="onEditorBlur($event)"
-                @focus="onEditorFocus($event)"
-                @ready="onEditorReady($event)"
-            >
-            </quill-editor> -->
-            <div class="quill-wrap">
-                <quill-editor
-                    v-model="content"
-                    ref="myQuillEditor"
-                    :options="editorOption"
-                >
-                </quill-editor>
-            </div>
-            <div id="flex">
-                <b-input-group>
-                    <b-form-select
-                        v-model="contactType"
-                        :options="options"
-                        slot="prepend"
+    <div ref="mescroll" class="mescroll">
+        <div>
+            <div>
+                <div id="leavemessage">既已到此，何不留言</div>
+                <div class="quill-wrap">
+                    <quill-editor
+                        v-model="content"
+                        ref="myQuillEditor"
+                        :options="editorOption"
+                    ></quill-editor>
+                </div>
+                <div id="flex" ref="submitLine">
+                    <b-input-group>
+                        <b-form-select
+                            v-model="contactType"
+                            :options="options"
+                            slot="prepend"
+                        ></b-form-select>
+                        <b-form-input v-model="contactMethod"></b-form-input>
+                    </b-input-group>
+
+                    <b-button
+                        variant="primary"
+                        @click="submit"
+                        :disabled="disabled"
                     >
-                    </b-form-select>
-                    <b-form-input v-model="contactMethod"></b-form-input>
-                </b-input-group>
+                        {{ submitButton }}
+                    </b-button>
+                </div>
 
-                <b-button
-                    variant="primary"
-                    @click="submit"
-                    :disabled="disabled"
-                >
-                    {{ submitButton }}
-                </b-button>
+                <div id="messages-box-big">
+                    <li
+                        class="messages-box"
+                        v-for="item in messages"
+                        :key="item.id"
+                    >
+                        <div
+                            class="messageContent"
+                            v-html="item.messageContent"
+                        ></div>
+                        <footer class="message-footer">
+                            <address>
+                                <span>
+                                    {{ item.province }}
+                                    {{ item.city }} </span
+                                >&emsp;
+                                <span class="message-contactType">
+                                    {{ item.contactType }}
+                                    {{ item.contactMethod }}
+                                </span>
+                            </address>
+
+                            <time class="message-time">
+                                {{ item.microtime | formatTime }}
+                            </time>
+                        </footer>
+                    </li>
+                </div>
             </div>
-
-            <div
-                id="messages-box-big"
-                v-infinite-scroll="loadMore"
-                infinite-scroll-disabled="loading"
-                infinite-scroll-distance="10"
-            >
-                <li
-                    class="messages-box"
-                    v-for="item in messages"
-                    :key="item.id"
-                >
-                    <div
-                        class="messageContent"
-                        v-html="item.messageContent"
-                    ></div>
-                    <footer class="message-footer">
-                        <address>
-                            <span>{{ item.province }} {{ item.city }}</span
-                            >&emsp;
-                            <span class="message-contactType">
-                                {{ item.contactType }}
-                                {{ item.contactMethod }}
-                            </span>
-                        </address>
-
-                        <time class="message-time">{{
-                            item.microtime | formatTime
-                        }}</time>
-                    </footer>
-                </li>
-            </div>
-
-            <div id="pullUp" v-show="loading">
-                <b-spinner variant="primary" label="Spinning"></b-spinner>
-            </div>
-            <div id="nomore" v-show="allLoaded">没有更多啦~~</div>
-        </mt-loadmore>
-        <div placement="top" content="返回顶部">
-            <back-to-top
-                transitionName="fade"
-                :customStyle="myBackToTopStyle"
-                :visibilityHeight="300"
-                :backPosition="50"
-            >
-            </back-to-top>
         </div>
     </div>
 </template>
 
 <script>
+import MeScroll from "mescroll.js";
+import "mescroll.js/mescroll.min.css";
 import "quill/dist/quill.core.css";
 import "quill/dist/quill.snow.css";
 import "quill/dist/quill.bubble.css";
@@ -108,12 +77,9 @@ Quill.register("modules/ImageExtend", ImageExtend);
 //convert img links to actual images
 
 Quill.register("modules/imageDrop", ImageDrop);
+
 export default {
-    metaInfo: {
-        title: "留言板112321323123",
-        meta: []
-    },
-    components: { BackToTop, quillEditor },
+    components: { BackToTop, quillEditor, MeScroll },
     filters: {
         formatTime: function(value) {
             function addZero(val) {
@@ -163,8 +129,8 @@ export default {
                 "background-size": "contain"
             },
             loading: false,
-            firstId: 0,
-            lastId: 0,
+            firstId: Number.MAX_SAFE_INTEGER,
+            lastId: Number.MAX_SAFE_INTEGER,
             allLoaded: false,
             messages: [],
             submitButton: "提交",
@@ -236,7 +202,9 @@ export default {
                     reg: "^\\d{11}$"
                 }
             ],
-            fullscreenLoading: false
+            fullscreenLoading: false,
+            mescroll: null,
+            newArr: [] // 数据列表
         };
     },
     computed: {
@@ -244,152 +212,175 @@ export default {
             return this.$refs.myQuillEditor.quill;
         }
     },
-    created() {
-        // Indicator.open({
-        //     text: "Loading...",
-        //     spinnerType: "fading-circle"
-        // });
-        this.$data.loading = true;
-        this.getMessages(0, 10, true).then(
-            (res) => {
-                this.$data.messages = res;
-                this.$data.loading = false;
-                // 执行成功的回调函数
-            },
-            () => {
-                this.$Toast({
-                    message: "加载失败，请稍后重试",
-                    iconClass: "icon icon-error"
-                });
-                this.$data.loading = false;
-                // 执行失败的回调函数
-            }
-        );
+    watch: {
+        loading(val) {
+            console.log("loading = ", val);
+        }
     },
     mounted() {
-        window.addEventListener("pageshow", function() {
-            console.log("pageshow");
-        });
-        window.addEventListener("pagehide", function() {
-            console.log("pagehide");
+        // this.pageResize();
+        // window.onresize = () => {
+        //     //调用methods中的事件
+        //     this.throttle(this.pageResize());
+        // };
+        // let that = this;
+        // this.$data.loading = true;
+        // that.downCallback();
+        this.mescroll = new MeScroll(this.$refs.mescroll, {
+            // 在mounted生命周期初始化mescroll,以确保您配置的dom元素能够被找到.
+            down: {
+                auto: true, // 是否在初始化完毕之后自动执行下拉回调callback; 默认true
+                callback: this.downCallback // 下拉刷新的回调
+            },
+            up: {
+                auto: false, // 是否在初始化时以上拉加载的方式自动加载第一页数据; 默认false
+                callback: this.upCallback, // 上拉回调,此处可简写; 相当于 callback: function (page) { upCallback(page); }
+                page: {
+                    num: 0, // 当前页码,默认0,回调之前会加1,即callback(page)会从1开始
+                    size: 10 // 每页数据的数量
+                },
+                noMoreSize: 5, // 如果列表已无数据,可设置列表的总数量要大于等于5条才显示无更多数据;避免列表数据过少(比如只有一条数据),显示无更多数据会不好看
+                toTop: {
+                    offset: 500,
+                    // 配置回到顶部按钮
+                    src: require("../assets/mescroll/mescroll-totop.png")
+                    // src: "../assets/images/me.png"
+                }
+            }
         });
     },
-
+    beforeRouteEnter(to, from, next) {
+        // 如果没有配置回到顶部按钮或isBounce,则beforeRouteEnter不用写
+        next((vm) => {
+            if (vm.mescroll) {
+                // 恢复到之前设置的isBounce状态
+                if (vm.mescroll.lastBounce != null)
+                    vm.mescroll.setBounce(vm.mescroll.lastBounce);
+                // 滚动到之前列表的位置(注意:路由使用keep-alive才生效)
+                if (vm.mescroll.lastScrollTop) {
+                    vm.mescroll.setScrollTop(vm.mescroll.lastScrollTop);
+                    setTimeout(() => {
+                        // 需延时,因为setScrollTop内部会触发onScroll,可能会渐显回到顶部按钮
+                        vm.mescroll.setTopBtnFadeDuration(0); // 设置回到顶部按钮显示时无渐显动画
+                    }, 16);
+                }
+            }
+        });
+    },
+    beforeRouteLeave(to, from, next) {
+        // 如果没有配置回到顶部按钮或isBounce,则beforeRouteLeave不用写
+        if (this.mescroll) {
+            this.mescroll.lastBounce = this.mescroll.optUp.isBounce; // 记录当前是否禁止ios回弹
+            this.mescroll.setBounce(true); // 允许bounce
+            this.mescroll.lastScrollTop = this.mescroll.getScrollTop(); // 记录当前滚动条的位置
+            this.mescroll.hideTopBtn(0); // 隐藏回到顶部按钮,无渐隐动画
+        }
+        next();
+    },
     methods: {
-        // onEditorBlur(quill) {
-        //     //console.log("editor blur!", quill.getContents());
-        // },
-        // onEditorFocus(quill) {
-        //     //console.log("editor focus!", quill);
-        // },
-        // onEditorReady(quill) {
-        //     //console.log("editor ready!", quill);
-        // },
-        onEditorChange({ html }) {
-            //console.log("editor change!", quill, html, text);
-            this.content = html;
-        },
-        unique(array) {
-            // 对象去重方法
-            var allArr = []; //建立新的临时数组
-            for (var i = 0; i < array.length; i++) {
-                var flag = true;
-                for (var j = 0; j < allArr.length; j++) {
-                    if (array[i].id == allArr[j].id) {
-                        flag = false;
+        throttle(func, wait = 300, type = 1) {
+            if (type === 1) {
+                var previous = 0;
+            } else if (type === 2) {
+                var timeout;
+            }
+            return function() {
+                let context = this;
+                let args = arguments;
+                if (type === 1) {
+                    let now = Date.now();
+
+                    if (now - previous > wait) {
+                        func.apply(context, args);
+                        previous = now;
+                    }
+                } else if (type === 2) {
+                    if (!timeout) {
+                        timeout = setTimeout(() => {
+                            timeout = null;
+                            func.apply(context, args);
+                        }, wait);
                     }
                 }
-                if (flag) {
-                    allArr.push(array[i]);
-                }
-            }
-            // //console.log("all", allArr);
-            return allArr;
+            };
         },
-        loadTop() {
-            this.getMessages(this.$data.lastId, 10).then(
-                (res) => {
-                    //console.log(this.$data.messages);
-                    let temp = this.$data.messages;
-                    temp = res.concat(temp);
-                    this.$data.messages = this.unique(temp);
-                    // this.$data.messages.splice(0, res.length);
-                    // for (let i = res.length - 1; i > -1; i--) {
-                    //     this.$data.messages.unshift(res[i]);
-                    // }
-                    //console.log(1, temp, res, this.$data.messages);
-                    // 执行成功的回调函数
-                },
-                () => {
-                    this.$Toast({
-                        message: "加载失败，请稍后重试",
-                        iconClass: "icon icon-error"
+        pageResize() {
+            this.$refs.mescroll.style.top =
+                this.$refs.submitLine.offsetTop +
+                this.$refs.submitLine.clientHeight +
+                // 60 +
+                "px";
+            console.log(
+                "mounted",
+                this.$refs.mescroll,
+                this.$refs.mescroll.style,
+                this.$refs.mescroll.style.top,
+                "r",
+                this.$refs.submitLine.offsetTop,
+                "r",
+                this.$refs.submitLine.clientHeight,
+                "g"
+            );
+        },
+        getMessages(start, length, lastest = false) {
+            var that = this;
+            console.log("start", start);
+            return new Promise((resolve, reject) => {
+                this.$axios
+                    .get("/php/getMessages.php", {
+                        params: {
+                            start,
+                            length,
+                            lastest:
+                                lastest === undefined
+                                    ? start === Number.MAX_SAFE_INTEGER - 10
+                                    : lastest
+                        }
+                    })
+                    .then(function(response) {
+                        //console.log(
+                        //     start,
+                        //     length,
+                        //     lastest,
+                        //     response,
+                        //     that.$data
+                        // );
+                        if (!response.data.messages) return;
+                        let length = response.data.messages.length;
+                        if (length > 0) {
+                            console.log("end a5xios", that.loading, "tt");
+                            if (lastest)
+                                that.$data.lastId = Math.max(
+                                    that.$data.lastId,
+                                    response.data.messages[0].id
+                                );
+                            that.$data.firstId = Math.min(
+                                that.$data.firstId,
+                                parseInt(response.data.messages[length - 1].id)
+                            );
+                            if (response.data.allLoaded === true)
+                                that.$data.allLoaded = true;
+
+                            return resolve(
+                                that.maskMessages(response.data.messages)
+                            );
+                        }
+
+                        //console.log("resolving");
+                    })
+                    .catch(function(error) {
+                        return reject(error);
                     });
-                    // 执行失败的回调函数
-                }
-            );
-            // this.updateMessagesList();
-            this.$refs.loadmore.onTopLoaded();
-        },
-        loadBottom() {
-            //不知道怎么用，很容易导致无限刷新，放弃
-            this.loading = true;
-            this.allLoaded = true;
-            //console.log("dfdssdfxd", this.$data.firstId);
-            // //console.log("bottm");
-            // if (this.$data.firstId < 2) return false;
-            //console.log("bottm222222222");
-            // this.allLoaded = true;
-            this.getMessages(this.$data.firstId - 10, 10).then(
-                (res) => {
-                    // //console.log(this.$data.messages);
-                    let temp = this.$data.messages;
-                    temp = temp.concat(res);
-                    this.$data.messages = this.unique(temp);
-                    //console.log("dfdssdfxd", this.$data.messages);
-                    this.loading = false;
-                    this.allLoaded = false;
-                },
-                () => {
-                    //console.log("dfdssdfxd", this.$data.messages);
-                    this.loading = false;
-                    this.allLoaded = false;
-                    //console.log(error);
-                }
-            );
-            this.loading = false;
-            this.$refs.loadmore.onBottomLoaded();
-            this.allLoaded = true; // 若数据已全部获取完毕
-        },
-        loadMore() {
-            // return false;
-            if (this.$data.allLoaded || this.$data.firstId === 0) {
-                return false;
-            }
-            //console.log(9);
-            this.$data.loading = true;
-            this.getMessages(this.$data.firstId - 10, 10).then(
-                (res) => {
-                    // //console.log(this.$data.messages);
-                    let temp = this.$data.messages;
-                    temp = temp.concat(res);
-                    this.$data.messages = this.unique(temp);
-                    //console.log("dfdssdfxd", this.$data.messages);
-                    this.loading = false;
-                },
-                () => {
-                    this.$Toast({
-                        message: "加载失败，请稍后重试",
-                        iconClass: "icon icon-error"
-                    });
-                    this.loading = false;
-                }
-            );
+            });
         },
         maskMessages(messages) {
             var that = this;
             var options = that.$data.options;
             for (var i = messages.length - 1; i > -1; i--) {
+                if (!messages[i].id) {
+                    messages[i].id = "temp" + Math.random(0, 100);
+                }
+
                 // messages.contactMethod=messages[messages.]
                 for (var j = options.length - 1; j > 0; j--) {
                     if (messages[i].contactType === options[j].value) {
@@ -409,57 +400,167 @@ export default {
 
             return messages;
         },
-
-        getMessages(start, length, lastest = false) {
-            var that = this;
-            return new Promise((resolve, reject) => {
-                this.$axios
-                    .get("/php/getMessages.php", {
-                        params: {
-                            start,
-                            length,
-                            lastest
-                        }
-                    })
-                    .then(function(response) {
-                        //console.log(
-                        //     start,
-                        //     length,
-                        //     lastest,
-                        //     response,
-                        //     that.$data
-                        // );
-                        if (!response.data.messages) return;
-                        let length = response.data.messages.length;
-                        if (length > 0) {
-                            if (lastest)
-                                that.$data.lastId =
-                                    response.data.messages[0].id;
-                            that.$data.firstId = parseInt(
-                                response.data.messages[length - 1].id
-                            );
-                            if (response.data.allLoaded === true)
-                                that.$data.allLoaded = true;
-                            // else that.$data.allLoaded = false;
-                            // //console.log(
-                            //     that.$data.allLoaded,
-                            //     "leng   ",
-                            //     length,
-                            //     that.$data.firstId,
-                            //     "firstid   ",
-                            //     response.data
-                            // );
-
-                            resolve(that.maskMessages(response.data.messages));
-                        }
-
-                        //console.log("resolving");
-                    })
-                    .catch(function(error) {
-                        reject(error);
-                        // eslint-disable-next-line vue/script-indent
+        compare(prop) {
+            return function(obj1, obj2) {
+                console.log("qqq", prop, obj1[prop]);
+                if (obj1[prop][0] === "t" || obj2[prop][0] === "t") return 0;
+                var val1 = obj1[prop];
+                var val2 = obj2[prop];
+                return val2 - val1;
+            };
+        },
+        unique(array) {
+            array = array.sort(this.compare("id"));
+            // 对象去重方法
+            var allArr = []; //建立新的临时数组
+            for (var i = array.length - 1; i > -1; i--) {
+                var flag = true;
+                for (var j = 0; j < allArr.length; j++) {
+                    if (
+                        array[i]["id"][0] === "t" ||
+                        array[i].id == allArr[j].id
+                    ) {
+                        flag = false;
+                    }
+                }
+                if (flag) {
+                    allArr.unshift(array[i]);
+                }
+            }
+            // //console.log("all", allArr);
+            return allArr;
+        },
+        // 上拉回调 page = {num:1, size:10}; num:当前页 ,默认从1开始; size:每页数据条数,默认10
+        upCallback(page) {
+            let that = this;
+            console.log(
+                "bottom",
+                this.firstId,
+                page,
+                this.$data.loading,
+                this.$data.allLoaded,
+                this.$data.firstId === Number.MAX_SAFE_INTEGER
+            );
+            if (this.$data.loading) return this.mescroll.endErr();
+            // 联网加载数据
+            if (this.$data.allLoaded || this.$data.firstId < 10) {
+                return this.mescroll.endErr();
+            }
+            console.log("this.mescroll.version=" + this.mescroll.version);
+            this.loading = true;
+            this.getMessages(that.$data.firstId - 10, 10).then(
+                (res) => {
+                    console.log("res", res);
+                    let temp = that.$data.messages;
+                    temp = temp.concat(res);
+                    that.$data.messages = that.unique(temp);
+                    //console.log("dfdssdfxd", this.$data.messages);
+                    that.mescroll.endSuccess(
+                        temp.length,
+                        !that.$data.allLoaded
+                    );
+                    that.$nextTick(function() {
+                        that.loading = false;
+                        that.mescroll.endSuccess();
                     });
-            });
+                },
+                () => {
+                    that.$Toast({
+                        message: "加载失败，请稍后重试",
+                        iconClass: "icon icon-error"
+                    });
+                    that.$nextTick(function() {
+                        that.loading = false; //输出：修改后的值
+                        that.mescroll.endErr();
+                    });
+
+                    console.log("end", that.$data.loading);
+                }
+            );
+        },
+        // upCallback(page) {
+        //     // 联网加载数据
+
+        // },
+        /* 下拉刷新的回调 */
+        downCallback() {
+            console.log("top", this.$data.lastId);
+            this.getMessages(this.$data.lastId, 10, true).then(
+                (res) => {
+                    console.log("res1", res);
+                    let temp = this.$data.messages;
+                    temp = temp.concat(res);
+                    this.$data.messages = this.unique(temp);
+                    this.$nextTick(function() {
+                        this.mescroll.endSuccess();
+                        this.loading = false;
+                    });
+                },
+                (err) => {
+                    console.log(err);
+                    this.$Toast({
+                        message: "加载失败，请稍后重试",
+                        iconClass: "icon icon-error"
+                    });
+                    this.$nextTick(function() {
+                        this.mescroll.endErr();
+                        this.loading = false;
+                    });
+
+                    // 执行失败的回调函数
+                }
+            );
+        },
+
+        /* 联网加载列表数据
+     在您的实际项目中,请参考官方写法: http://www.mescroll.com/api.html#tagUpCallback
+     请忽略getListDataFromNet的逻辑,这里仅仅是在本地模拟分页数据,本地演示用
+     实际项目以您服务器接口返回的数据为准,无需本地处理分页.
+    * */
+        getListDataFromNet(pageNum, pageSize, successCallback, errorCallback) {
+            // 延时一秒,模拟联网
+            setTimeout(function() {
+                try {
+                    if (pageNum === 0) {
+                        // 此处模拟下拉刷新返回的数据
+                        var id = new Date().getTime();
+                        var newObj = {
+                            title: "【新增新闻】 标题" + id,
+                            content: "新增新闻的内容",
+                            id: id
+                        };
+                        successCallback && successCallback(newObj);
+                    } else {
+                        // 此处模拟上拉加载返回的数据
+                        var newArr = [];
+                        for (var i = 0; i < pageSize; i++) {
+                            var upIndex = (pageNum - 1) * pageSize + i + 1;
+                            newArr.push({
+                                title:
+                                    "【新闻" +
+                                    upIndex +
+                                    "】 标题标题标题标题标题标题",
+                                content:
+                                    "内容内容内容内容内容内容内容内容内容内容",
+                                id: upIndex
+                            });
+                        }
+                        successCallback && successCallback(newArr);
+                    }
+                } catch (e) {
+                    // 联网失败的回调
+                    errorCallback && errorCallback();
+                }
+            }, 1000);
+        },
+
+        scrollToTop() {
+            console.log("scrollToTop", this.$refs.scrollContainer.scrollTop);
+            this.$refs["scrollContainer"].scrollTo();
+        },
+        onEditorChange({ html }) {
+            //console.log("editor change!", quill, html, text);
+            this.content = html;
         },
         checkContactMethod() {
             var options = this.$data.options;
@@ -512,13 +613,6 @@ export default {
             if (!this.checkContactMethod()) {
                 return;
             }
-            // let loadingInstance = this.$loading({
-            //     lock: true,
-            //     text: "提交中",
-            //     spinner: "el-icon-loading",
-            //     background: "rgba(0, 0, 0, 0.7)"
-            //     // fullscreenLoading: false
-            // });
             this.$Indicator.open({
                 text: "提交中...",
                 spinnerType: "fading-circle"
@@ -544,9 +638,6 @@ export default {
                             iconClass: "icon icon-success"
                         });
                     }
-
-                    //console.log(response.data); //请求成功返回的数据
-                    // loadingInstance.close();
                     this.$data.content = "";
                     tempMessage["contactMethod"] = this.maskContackMethod(
                         tempMessage["contactMethod"]
@@ -562,28 +653,74 @@ export default {
                         message: `提交失败  ${error}`,
                         iconClass: "icon icon-error"
                     });
-
-                    // loadingInstance.close();
-                    // this.disabled = false;
-                    // this.submitButton = "提交";
-                    //console.log(error); //请求失败返回的数据
-                    // eslint-disable-next-line vue/script-indent
                 });
-            //console.log(
-            //     "提交",
-            //     this.$data.content,
-            //     this.$data.selected,
-            //     this.$data.contactMethod
-            // );
         }
     }
 };
 </script>
 
+<style scoped>
+/*以fixed的方式固定mescroll的高度*/
+.mescroll {
+    position: fixed;
+    bottom: 0;
+    top: 0;
+    height: auto;
+}
+
+.header {
+    z-index: 9990;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 44px;
+    line-height: 44px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+    background-color: white;
+}
+
+.header .btn-left {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 12px;
+    line-height: 22px;
+}
+
+.header .btn-right {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 0 12px;
+}
+
+.mescroll .notice {
+    font-size: 14px;
+    padding: 20px 0;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+    color: #555;
+}
+
+.news-list li {
+    padding: 16px;
+    border-bottom: 1px solid #eee;
+}
+
+.news-list .new-content {
+    font-size: 14px;
+    margin-top: 6px;
+    margin-left: 10px;
+    color: #666;
+}
+</style>
+
 <style>
 .ql-container.ql-snow .ql-editor {
     line-height: normal;
-    height: 220px;
+    height: 150px;
 }
 .ql-snow .ql-tooltip[data-mode="link"]::before {
     content: "请输入链接地址:";
@@ -681,7 +818,9 @@ export default {
     text-align: center;
 }
 #messages-box-big {
+    // height: 100px;
     margin: 0 10px;
+    // overflow: visible;
     .messages-box {
         list-style-type: none;
         border-bottom: 1px solid #e1e4e6;
@@ -732,8 +871,7 @@ export default {
     font-size: 0.6rem;
 }
 #leavemessage {
-    margin-top: 0;
-
+    // margin-top: 2.5rem;
     font-family: 华文行楷, 微软雅黑, serif;
     font-size: 1em;
     font-weight: 900;

@@ -15,21 +15,11 @@
                 <router-view class="router"></router-view>
             </keep-alive>
         </transition>
-
-        <footer id="mainApp">
-            <address v-html="footer"></address>
-        </footer>
     </div>
 </template>
 
 <script>
 export default {
-    data() {
-        return {
-            footer: `加油进步的程序员`
-            // classObject: { "active-class": (console.log(this), "d") }
-        };
-    },
     created() {
         console.log(this.$route, this.$router);
     },
@@ -63,14 +53,32 @@ export default {
     }
 }
 
+html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+}
+
+#app {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+    max-height: 100%;
+}
+
 nav {
     display: flex;
     top: 0;
-    position: sticky;
+    height: 2.5rem;
+    width: 100%;
+    line-height: 2.5rem;
+    position: fixed;
     background-color: #fff;
     z-index: 1;
     .nav-item {
-        padding: 0.5rem 1rem;
         flex-basis: 0;
         -ms-flex-positive: 1;
         flex-grow: 1;
@@ -84,8 +92,6 @@ nav {
             background-color: rgb(204, 232, 207);
 
             border-radius: 5px;
-
-            display: block;
         }
     }
 }
@@ -95,36 +101,38 @@ footer#mainApp {
     border-top: 10px groove skyblue;
     // flex:none;
 }
-
-html,
-body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    width: 100%;
-}
-
-#app {
-    min-height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
 .router {
+    // position: absolute;
+    // top: 0;
     width: 100%;
+    // transition: all 0.3s ease;
+    padding-top: 2.5rem;
+    // width: 100%;
     overflow-x: hidden;
-    transition: all 0.5s ease;
+    // transition: all 21s ease;
 }
-.slide-left-enter,
-.slide-right-leave-active {
-    opacity: 0;
-    transform: translateX(100%);
+.slide-right-enter-active,
+.slide-right-leave-active,
+.slide-left-enter-active,
+.slide-left-leave-active {
+    will-change: transform;
+    transition: all 0.5s linear;
+    height: 100%;
+    top: 0px;
+    position: absolute;
+    backface-visibility: hidden;
+    perspective: 1000;
 }
-
-.slide-left-leave-active,
+.slide-left-enter {
+    transform: translate3d(100%, 0, 0);
+}
+.slide-left-leave-active {
+    transform: translate3d(-100%, 0, 0);
+}
 .slide-right-enter {
-    opacity: 0;
-    transform: translateX(-100%);
+    transform: translate3d(-100%, 0, 0);
+}
+.slide-right-leave-active {
+    transform: translate3d(100%, 0, 0);
 }
 </style>

@@ -30,6 +30,10 @@ export default {
             // 返回顶部时，滚动到哪里（距离顶部的距离）
             type: Number,
             default: 0
+        },
+        visibleAlways: {
+            type: Boolean,
+            default: false
         }
     },
     data() {
@@ -39,7 +43,10 @@ export default {
         };
     },
     mounted() {
-        window.addEventListener("scroll", this.handleScroll);
+        if (this.visibleAlways) {
+            this.visible = true;
+            console.log(99, this.visible);
+        } else window.addEventListener("scroll", this.handleScroll);
     },
     beforeDestroy() {
         window.removeEventListener("scroll", this.handleScroll);

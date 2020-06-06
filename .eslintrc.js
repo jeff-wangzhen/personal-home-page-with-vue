@@ -7,20 +7,6 @@ module.exports = {
     rules: {
         "eqeqeq": "off",
         "indent": "off",
-        "vue/script-indent": [
-            "error",
-            4,
-            {
-                baseIndent: 0
-            }
-        ],
-        "vue/html-indent": [
-            "error",
-            4,
-            {
-                baseIndent: 0
-            }
-        ],
         "no-console": process.env.NODE_ENV === "production" ? "off" : "off",
         "no-debugger": process.env.NODE_ENV === "production" ? "error" : "off"
     },

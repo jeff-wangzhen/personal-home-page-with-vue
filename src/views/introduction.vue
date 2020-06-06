@@ -29,6 +29,9 @@
                 <b-card-text class="text-justify" v-html="p5"></b-card-text>
             </b-card>
         </div>
+        <footer id="mainApp">
+            <address v-html="footer"></address>
+        </footer>
     </div>
 </template>
 
@@ -62,7 +65,8 @@ export default {
                     出生地: "江西省 上饶市 上饶县",
                     现居地: "重庆市 沙坪坝区 虎溪镇"
                 }
-            ]
+            ],
+            footer: "加油进步的程序员"
         };
     },
     methods: {

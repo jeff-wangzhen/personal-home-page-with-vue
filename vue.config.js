@@ -1,10 +1,8 @@
-// 代码压缩
-// gzip压缩
 const CompressionWebpackPlugin = require("compression-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const HardSourceWebpackPlugin = require("hard-source-webpack-plugin");
 // 是否为生产环境
-const isProduction = process.env.NODE_ENV !== "development";
+const isProduction = process.env.NODE_ENV === "production";
 
 // 本地环境是否需要使用cdn
 const devNeedCdn = true;
@@ -140,7 +138,7 @@ module.exports = {
     outputDir: "./dist/grwz-vue/", // 输出文件目录
     devServer: {
         open: true,
-        host: "127.0.0.1",
+        host: "127.7.7.7",
         port: "37354",
         https: false,
         hot: true,
