@@ -58,12 +58,13 @@ body {
     margin: 0;
     padding: 0;
     height: 100%;
-    width: 100%;
 }
 
 #app {
     position: relative;
-    width: 100%;
+
+    margin: auto;
+    max-width: 750px;
     height: 100%;
     overflow-x: hidden;
     max-height: 100%;
@@ -72,6 +73,7 @@ body {
 nav {
     display: flex;
     top: 0;
+    left: 0;
     height: 2.5rem;
     width: 100%;
     line-height: 2.5rem;

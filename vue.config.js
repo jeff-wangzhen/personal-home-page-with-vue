@@ -59,6 +59,7 @@ module.exports = {
 
         // 别名配置
         config.resolve.alias
+            .set("@", resolve("src"))
             .set("assets", resolve("src/assets"))
             .set("components", resolve("src/components"));
     },
@@ -147,7 +148,7 @@ module.exports = {
         }
         // proxy: {
         //     "/grwz-vue": {
-        //         target: "http://127.7.7.7",
+        //         target: "http://localhost",
         //         changeOrigin: true,
         //         ws: true,
         //         pathRewrite: {

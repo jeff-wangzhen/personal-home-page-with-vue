@@ -35,7 +35,7 @@ Vue.prototype.qs = qs;
 
 if (window.location.host.indexOf(":") > -1) {
     //有端口，本地项目调试
-    axios.defaults.baseURL = "http://127.7.7.7/grwz-vue/";
+    axios.defaults.baseURL = "http://localhost/grwz-vue/";
 } else {
     //线上
     axios.defaults.baseURL = location.origin + "/grwz-vue/";

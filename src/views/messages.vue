@@ -666,6 +666,8 @@ export default {
     bottom: 0;
     top: 0;
     height: auto;
+    max-width: 750px;
+    margin: auto;
 }
 
 .header {
